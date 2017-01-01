@@ -3,16 +3,16 @@ module Main exposing (main)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
-import Palette exposing (Palette, paletteDiv)
+import Palette exposing (Palette, paletteDiv, safeHex)
 
 initialPalette : Palette
 initialPalette = 
-  [ { name="white", hex="FFFFFF" }
-  , { name="light", hex="B3EFFF" }
-  , { name="bright", hex="00CFFF" }
-  , { name="medium", hex="046B99" }
-  , { name="dark", hex="1C304A" }
-  , { name="black", hex="000000" }
+  [ { name="white", color=safeHex "FFFFFF" }
+  , { name="light", color=safeHex "B3EFFF" }
+  , { name="bright", color=safeHex "00CFFF" }
+  , { name="medium", color=safeHex "046B99" }
+  , { name="dark", color=safeHex "1C304A" }
+  , { name="black", color=safeHex "000000" }
   ]
 
 styles : Html msg
