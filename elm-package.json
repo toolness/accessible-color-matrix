@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "Experimental accessible color matrix tool",
-    "repository": "https://github.com/toolness/TODO_MAKE_A_REPO.git",
+    "repository": "https://github.com/toolness/accessible-color-matrix.git",
     "license": "BSD3",
     "source-directories": [
         "."
