@@ -1,22 +1,14 @@
-import Html exposing (..)
-import Html.Attributes exposing (..)
+module Palette exposing (..)
+
+import Html exposing (div, p, text, Html)
+import Html.Attributes exposing (class, style)
 
 type alias PaletteEntry = { name: String, hex: String }
 
 type alias Palette = List PaletteEntry
 
-initialPalette : Palette
-initialPalette = 
-  [ { name="white", hex="FFFFFF" }
-  , { name="light", hex="B3EFFF" }
-  , { name="bright", hex="00CFFF" }
-  , { name="medium", hex="046B99" }
-  , { name="dark", hex="1C304A" }
-  , { name="black", hex="000000" }
-  ]
-
-paletteHtml : Palette -> Html msg
-paletteHtml palette =
+paletteDiv : Palette -> Html msg
+paletteDiv palette =
   let
     bgStyle : PaletteEntry -> List (String, String)
     bgStyle entry =
@@ -40,15 +32,3 @@ paletteHtml palette =
   in
     div [ class "usa-grid-full usa-color-row usa-primary-color-section" ]
       (List.map square palette)
-
-styles : Html msg
-styles =
-  -- This is a temporary hack until we define our own styles.
-  node "link" [ rel "stylesheet"
-              , href "https://pages.18f.gov/brand/css/main.css" ] []
-
-main =
-  div [ style [ ("padding", "0 5em") ] ]
-    [ styles
-    , h1 [] [ text "Palette" ]
-    , paletteHtml initialPalette ]
