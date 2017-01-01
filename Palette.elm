@@ -32,6 +32,7 @@ paletteDiv palette =
         if entry.color == white then
           [ ("box-shadow", "inset 0 0 0 1px #aeb0b5") ]
           else []
+
     square : PaletteEntry -> Html msg
     square entry =
       div [ class "usa-color-square"
