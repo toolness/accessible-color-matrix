@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 import Palette exposing (Palette, paletteDiv, safeHex)
+import ContrastRatio exposing (contrastRatio)
 
 initialPalette : Palette
 initialPalette = 
@@ -25,4 +26,13 @@ main =
   div [ style [ ("padding", "0 5em") ] ]
     [ styles
     , h1 [] [ text "Palette" ]
-    , paletteDiv initialPalette ]
+    , paletteDiv initialPalette
+
+    -- TODO: This part is temporary.
+    , p []
+      [ contrastRatio (safeHex "FFFFFF") (safeHex "000000")
+          |> toString
+          |> (++) "The contrast ratio of white on black is: "
+          |> text
+      ]
+    ]
