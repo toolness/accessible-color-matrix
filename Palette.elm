@@ -6,7 +6,6 @@ import Html.Events exposing (onInput)
 import Color exposing (Color, white, red)
 import Color.Convert exposing (colorToHex, hexToColor)
 
-import Messages exposing (Message)
 import ContrastRatio exposing (areColorsIndistinguishable)
 
 type alias PaletteEntry =
