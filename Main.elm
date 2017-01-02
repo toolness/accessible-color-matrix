@@ -39,7 +39,7 @@ styledContent model content =
   div [] (
     [ node "link"
       [ rel "stylesheet"
-      , href "https://pages.18f.gov/brand/css/main.css"
+      , href "main.css"
       , on "load" (succeed StylesLoaded)
       ] []
     ] ++ (if model.stylesLoaded then content else []))
