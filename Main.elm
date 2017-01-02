@@ -27,6 +27,6 @@ main =
     [ styles
     , h2 [] [ text "Palette" ]
     , paletteDiv initialPalette
-    , h2 [] [ text "Matrix" ]
+    , h2 [] [ text "Accessible Color Combinations" ]
     , matrixDiv initialPalette
     ]
