@@ -2,38 +2,13 @@ module Matrix exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, scope, style, title)
-import Svg as S
-import Svg.Attributes as SA
 import Color exposing (white)
 
+import Symbols exposing (symbols, badContrastSvg)
 import ContrastRatio exposing (contrastRatio)
 import Palette exposing (
   Palette, PaletteEntry, paletteEntryHex, squareBgStyle
   )
-
-badContrastId = "usa-matrix-bad-contrast-ratio"
-badContrastHref = "#" ++ badContrastId
-
-symbols : S.Svg msg
-symbols =
-  S.svg [ SA.class "usa-matrix-symbol-definitions" ]
-    [ S.symbol [ SA.id badContrastId
-               , SA.viewBox "0 0 100 100" ]
-      [ S.rect [ SA.width "100"
-               , SA.height "100"
-               , SA.fill "#f0f0f0" ] []
-      , S.line [ SA.x1 "0"
-               , SA.y1 "100"
-               , SA.x2 "100"
-               , SA.y2 "0"
-               , SA.stroke "white"
-               , SA.strokeWidth "4" ] []
-      ]
-    ]
-
-badContrastSvg : List (S.Attribute msg) -> S.Svg msg
-badContrastSvg attrs =
-  S.svg attrs [ S.use [ SA.xlinkHref badContrastHref ] [] ]
 
 ariaHidden : Bool -> Html.Attribute msg
 ariaHidden val =
@@ -82,7 +57,7 @@ goodContrastText background foreground ratio =
 legend : Html msg
 legend =
   div [ class "usa-matrix-legend" ]
-    [ badContrastSvg []
+    [ badContrastSvg ""
     , p [ class "usa-sr-invisible", ariaHidden True ]
         [ Html.text badContrastLegendText ]
     ]
@@ -184,7 +159,7 @@ matrixTableRow palette =
           in
             td [ class "usa-matrix-invalid-color-combo" ]
               [ div [ role "presentation", title desc ]
-                [ badContrastSvg [ SA.class "usa-matrix-square" ] ]
+                [ badContrastSvg "usa-matrix-square" ]
               , div [ class "usa-sr-only" ] [ text desc ]
               ]
       in
