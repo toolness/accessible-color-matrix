@@ -15,16 +15,16 @@ safeHex hex =
     Nothing -> red
     Just c -> c
 
+paletteEntryHex : PaletteEntry -> String
+paletteEntryHex entry =
+  colorToHex entry.color |> String.toUpper
+
 paletteDiv : Palette -> Html msg
 paletteDiv palette =
   let
-    toHex : PaletteEntry -> String
-    toHex entry =
-      colorToHex entry.color |> String.toUpper
-
     bgStyle : PaletteEntry -> List (String, String)
     bgStyle entry =
-      [ ("background-color", toHex entry) ] ++
+      [ ("background-color", paletteEntryHex entry) ] ++
         -- TODO: We really want to be doing some color math here to
         -- determine whether the color will be indistinguishable
         -- from its background or not, rather than comparing directly
@@ -39,7 +39,7 @@ paletteDiv palette =
           , style (bgStyle entry) ]
         [ div [ class "usa-color-inner-content" ]
           [ p [ class "usa-color-name" ] [ text entry.name ]
-          , p [ class "usa-color-hex" ] [ text (toHex entry) ]
+          , p [ class "usa-color-hex" ] [ text (paletteEntryHex entry) ]
           ]
         ]
   in

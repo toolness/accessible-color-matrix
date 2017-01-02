@@ -1,11 +1,12 @@
 module Matrix exposing (..)
 
-import Html exposing (Html, div, p)
-import Html.Attributes exposing (attribute, class)
+import Html exposing (..)
+import Html.Attributes exposing (attribute, class, scope, style)
 import Svg as S
 import Svg.Attributes as SA
+import Color exposing (white)
 
-import Palette exposing (Palette)
+import Palette exposing (Palette, PaletteEntry, paletteEntryHex)
 
 badContrastId = "usa-matrix-bad-contrast-ratio"
 badContrastHref = "#" ++ badContrastId
@@ -52,9 +53,56 @@ legend =
         [ Html.text badContrastText ]
     ]
 
+capFirst : String -> String
+capFirst str =
+  (String.toUpper (String.left 1 str)) ++ (String.dropLeft 1 str)
+
+matrixTableHeader : Palette -> Html msg
+matrixTableHeader palette =
+  let
+    fgStyle : PaletteEntry -> List (String, String)
+    fgStyle entry =
+      [ ("color", paletteEntryHex entry) ] ++
+        -- TODO: We really want to be doing some color math here to
+        -- determine whether the color will be indistinguishable
+        -- from its background or not, rather than comparing directly
+        -- to white.
+        if entry.color == white then
+          -- https://css-tricks.com/adding-stroke-to-web-text/
+          [ ("text-shadow"
+            ,"-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, " ++
+             "1px 1px 0 #000") ]
+          else []
+
+    headerCell entry =
+      td [ scope "col" ]
+        [ div [ class "usa-matrix-desc" ]
+          [ text (capFirst entry.name)
+          , text " text"
+          , br [] []
+          , small [] [ text (paletteEntryHex entry) ]
+          ]
+        , strong [ class "usa-sr-invisible"
+                 , ariaHidden True
+                 , style (fgStyle entry) ]
+          [ text "Aa" ]
+        ]
+  in
+    thead []
+      [ tr []
+        ([ td [ scope "col" ] [] ] ++ List.map headerCell palette)
+      ]
+
+matrixTable : Palette -> Html msg
+matrixTable palette =
+  table [ class "usa-table-borderless usa-matrix" ]
+    [ matrixTableHeader palette
+    ]
+
 matrixDiv : Palette -> Html msg
 matrixDiv palette =
   div []
     [ symbols
     , legend
+    , matrixTable palette
     ]
