@@ -30,3 +30,7 @@ contrastRatio c1 c2 =
     if lum1 > lum2 then
       ratio lum1 lum2
       else ratio lum2 lum1
+
+areColorsIndistinguishable : Color -> Color -> Bool
+areColorsIndistinguishable c1 c2 =
+  contrastRatio c1 c2 < 1.1

@@ -5,7 +5,7 @@ import Html.Attributes exposing (attribute, class, scope, style, title)
 import Color exposing (white)
 
 import Symbols exposing (symbols, badContrastSvg)
-import ContrastRatio exposing (contrastRatio)
+import ContrastRatio exposing (contrastRatio, areColorsIndistinguishable)
 import Palette exposing (
   Palette, PaletteEntry, paletteEntryHex, squareBgStyle
   )
@@ -72,11 +72,7 @@ matrixTableHeader palette =
     fgStyle : PaletteEntry -> List (String, String)
     fgStyle entry =
       [ ("color", paletteEntryHex entry) ] ++
-        -- TODO: We really want to be doing some color math here to
-        -- determine whether the color will be indistinguishable
-        -- from its background or not, rather than comparing directly
-        -- to white.
-        if entry.color == white then
+        if areColorsIndistinguishable entry.color white then
           -- https://css-tricks.com/adding-stroke-to-web-text/
           [ ("text-shadow"
             ,"-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, " ++

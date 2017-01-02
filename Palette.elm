@@ -7,6 +7,7 @@ import Color exposing (Color, white, red)
 import Color.Convert exposing (colorToHex, hexToColor)
 
 import Messages exposing (Message)
+import ContrastRatio exposing (areColorsIndistinguishable)
 
 type alias PaletteEntry =
   { id: Int
@@ -59,11 +60,7 @@ paletteEntryHex entry =
 squareBgStyle : PaletteEntry -> List (String, String)
 squareBgStyle entry =
   [ ("background-color", paletteEntryHex entry) ] ++
-    -- TODO: We really want to be doing some color math here to
-    -- determine whether the color will be indistinguishable
-    -- from its background or not, rather than comparing directly
-    -- to white.
-    if entry.color == white then
+    if areColorsIndistinguishable entry.color white then
       [ ("box-shadow", "inset 0 0 0 1px #aeb0b5") ]
       else []
 
