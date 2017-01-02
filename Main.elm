@@ -5,7 +5,6 @@ import Html.Attributes exposing (..)
 
 import Palette exposing (Palette, paletteDiv, safeHex)
 import Matrix exposing (matrixDiv)
-import ContrastRatio exposing (contrastRatio)
 
 initialPalette : Palette
 initialPalette = 
@@ -30,12 +29,4 @@ main =
     , paletteDiv initialPalette
     , h2 [] [ text "Matrix" ]
     , matrixDiv initialPalette
-
-    -- TODO: This part is temporary.
-    , p []
-      [ contrastRatio (safeHex "FFFFFF") (safeHex "000000")
-          |> toString
-          |> (++) "The contrast ratio of white on black is: "
-          |> text
-      ]
     ]
