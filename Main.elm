@@ -2,13 +2,20 @@ module Main exposing (main)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (on)
+import Json.Decode exposing (succeed)
 
 import Palette exposing (
   Palette, PaletteMsg, paletteDiv, createPalette, updatePalette
   )
 import Matrix exposing (matrixDiv)
 
-type Message = PaletteMessage PaletteMsg
+type Message = PaletteMessage PaletteMsg | StylesLoaded
+
+type alias Model =
+  { palette: Palette
+  , stylesLoaded: Bool
+  }
 
 initialPalette : Palette
 initialPalette = createPalette
@@ -20,28 +27,43 @@ initialPalette = createPalette
   , ("black", "000000")
   ]
 
-styles : Html msg
-styles =
-  -- This is a temporary hack until we define our own styles.
-  node "link" [ rel "stylesheet"
-              , href "https://pages.18f.gov/brand/css/main.css" ] []
+model : Model
+model =
+  { palette = initialPalette
+  , stylesLoaded = False
+  }
 
-view : Palette -> Html Message
-view palette =
+styledContent : Model -> List (Html Message) -> Html Message
+styledContent model content =
+  -- This is a temporary hack until we define our own styles.
+  div [] (
+    [ node "link"
+      [ rel "stylesheet"
+      , href "https://pages.18f.gov/brand/css/main.css"
+      , on "load" (succeed StylesLoaded)
+      ] []
+    ] ++ (if model.stylesLoaded then content else []))
+
+view : Model -> Html Message
+view model =
   div [ style [ ("padding", "0 5em") ] ]
-    [ styles
-    , h2 [] [ text "Palette" ]
-    , Html.map (\m -> PaletteMessage m) (paletteDiv palette True)
-    , h2 [] [ text "Accessible Color Combinations" ]
-    , matrixDiv palette
+    [ styledContent model
+      [ h2 [] [ text "Palette" ]
+      , Html.map (\m -> PaletteMessage m) (paletteDiv model.palette True)
+      , h2 [] [ text "Accessible Color Combinations" ]
+      , matrixDiv model.palette
+      ]
     ]
 
-update : Message -> Palette -> Palette
-update message palette =
+update : Message -> Model -> Model
+update message model =
   case message of
-    PaletteMessage m -> updatePalette m palette
+    PaletteMessage msg ->
+      {model | palette = updatePalette msg model.palette}
+    StylesLoaded ->
+      {model | stylesLoaded = True}
 
 main =
-  Html.beginnerProgram { model = initialPalette
+  Html.beginnerProgram { model = model
                        , view = view
                        , update = update }
