@@ -1,7 +1,7 @@
 module Palette exposing (..)
 
-import Html exposing (div, p, text, input, Html)
-import Html.Attributes exposing (class, style, type_, value)
+import Html exposing (div, p, text, input, label, Html)
+import Html.Attributes exposing (class, style, type_, value, id, for)
 import Html.Events exposing (onInput)
 import Color exposing (Color, white, red)
 import Color.Convert exposing (colorToHex, hexToColor)
@@ -70,23 +70,30 @@ squareBgStyle entry =
 paletteDiv : Palette -> Bool -> Html Message
 paletteDiv palette isEditable =
   let
+    makeUniqueId : String -> PaletteEntry -> String
+    makeUniqueId prefix entry = prefix ++ "_" ++ (toString entry.id)
+
     entryName : PaletteEntry -> List (Html Message)
     entryName entry =
-      if isEditable then
+      if isEditable then let inputId = makeUniqueId "color_name" entry in
         [ input [ type_ "text"
+                , id inputId
                 , value entry.name
                 , onInput (Messages.ChangeName entry.id) ] []
-          -- TODO: Add label.
+        , label [ class "usa-sr-only", for inputId ]
+            [ text "Color name" ]
         ]
         else [ text entry.name ]
 
     entryHex : PaletteEntry -> List (Html Message)
     entryHex entry =
-      if isEditable then
+      if isEditable then let inputId = makeUniqueId "color_value" entry in
         [ input [ type_ "text"
+                , id inputId
                 , value entry.editableColor
                 , onInput (Messages.ChangeColor entry.id) ] []
-          -- TODO: Add label.
+        , label [ class "usa-sr-only", for inputId ]
+            [ text "Color value (in hexadecimal)" ]
         ]
         else [ text (paletteEntryHex entry) ]
 
