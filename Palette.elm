@@ -8,9 +8,43 @@ import Color.Convert exposing (colorToHex, hexToColor)
 
 import Messages exposing (Message)
 
-type alias PaletteEntry = { id: Int, name: String, color: Color }
+type alias PaletteEntry =
+  { id: Int
+  , name: String
+  , color: Color
+  , editableColor: String
+  }
 
 type alias Palette = List PaletteEntry
+
+updatePalette : Message -> Palette -> Palette
+updatePalette msg palette =
+  case msg of
+    Messages.ChangeName id newName ->
+      List.map
+        (\e -> if e.id == id then {e | name = newName} else e)
+        palette
+    Messages.ChangeColor id newColor ->
+      let
+        changeColor entry =
+          case hexToColor newColor of
+            Nothing -> {entry | editableColor = newColor}
+            Just c -> {entry | color = c, editableColor = newColor}
+      in
+        List.map
+          (\e -> if e.id == id then (changeColor e) else e)
+          palette
+
+createPalette : List (String, String) -> Palette
+createPalette items =
+  let
+    entry id (name, hex) =
+      { id = id
+      , name = name
+      , color = safeHex hex
+      , editableColor = hex }
+  in
+    List.indexedMap entry items
 
 safeHex : String -> Color
 safeHex hex =
@@ -42,15 +76,17 @@ paletteDiv palette isEditable =
         [ input [ type_ "text"
                 , value entry.name
                 , onInput (Messages.ChangeName entry.id) ] []
+          -- TODO: Add label.
         ]
         else [ text entry.name ]
 
-    entryHex : PaletteEntry -> List (Html msg)
+    entryHex : PaletteEntry -> List (Html Message)
     entryHex entry =
       if isEditable then
-        -- TODO: Allow for editing of hex value.
         [ input [ type_ "text"
-                , value (paletteEntryHex entry) ] []
+                , value entry.editableColor
+                , onInput (Messages.ChangeColor entry.id) ] []
+          -- TODO: Add label.
         ]
         else [ text (paletteEntryHex entry) ]
 

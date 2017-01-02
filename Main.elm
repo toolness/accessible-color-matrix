@@ -4,17 +4,17 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 import Messages exposing (Message)
-import Palette exposing (Palette, paletteDiv, safeHex)
+import Palette exposing (Palette, paletteDiv, createPalette, updatePalette)
 import Matrix exposing (matrixDiv)
 
 initialPalette : Palette
-initialPalette = 
-  [ { id=0, name="white", color=safeHex "FFFFFF" }
-  , { id=1, name="light", color=safeHex "B3EFFF" }
-  , { id=2, name="bright", color=safeHex "00CFFF" }
-  , { id=3, name="medium", color=safeHex "046B99" }
-  , { id=4, name="dark", color=safeHex "1C304A" }
-  , { id=5, name="black", color=safeHex "000000" }
+initialPalette = createPalette
+  [ ("white", "ffffff")
+  , ("light", "b3efff")
+  , ("bright", "00cfff")
+  , ("medium", "046b99")
+  , ("dark", "1c304a")
+  , ("black", "000000")
   ]
 
 styles : Html msg
@@ -33,15 +33,7 @@ view palette =
     , matrixDiv palette
     ]
 
-update : Message -> Palette -> Palette
-update msg palette =
-  case msg of
-    Messages.ChangeName id newName ->
-      List.map
-        (\e -> if e.id == id then {e | name = newName} else e)
-        palette
-
 main =
   Html.beginnerProgram { model = initialPalette
                        , view = view
-                       , update = update }
+                       , update = updatePalette }
