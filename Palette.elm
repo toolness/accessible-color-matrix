@@ -18,14 +18,16 @@ type alias PaletteEntry =
 
 type alias Palette = List PaletteEntry
 
-updatePalette : Message -> Palette -> Palette
+type PaletteMsg = ChangeName Int String | ChangeColor Int String
+
+updatePalette : PaletteMsg -> Palette -> Palette
 updatePalette msg palette =
   case msg of
-    Messages.ChangeName id newName ->
+    ChangeName id newName ->
       List.map
         (\e -> if e.id == id then {e | name = newName} else e)
         palette
-    Messages.ChangeColor id newColor ->
+    ChangeColor id newColor ->
       let
         changeColor entry =
           case hexToColor newColor of
@@ -64,37 +66,37 @@ squareBgStyle entry =
       [ ("box-shadow", "inset 0 0 0 1px #aeb0b5") ]
       else []
 
-paletteDiv : Palette -> Bool -> Html Message
+paletteDiv : Palette -> Bool -> Html PaletteMsg
 paletteDiv palette isEditable =
   let
     makeUniqueId : String -> PaletteEntry -> String
     makeUniqueId prefix entry = prefix ++ "_" ++ (toString entry.id)
 
-    entryName : PaletteEntry -> List (Html Message)
+    entryName : PaletteEntry -> List (Html PaletteMsg)
     entryName entry =
       if isEditable then let inputId = makeUniqueId "color_name" entry in
         [ input [ type_ "text"
                 , id inputId
                 , value entry.name
-                , onInput (Messages.ChangeName entry.id) ] []
+                , onInput (ChangeName entry.id) ] []
         , label [ class "usa-sr-only", for inputId ]
             [ text "Color name" ]
         ]
         else [ text entry.name ]
 
-    entryHex : PaletteEntry -> List (Html Message)
+    entryHex : PaletteEntry -> List (Html PaletteMsg)
     entryHex entry =
       if isEditable then let inputId = makeUniqueId "color_value" entry in
         [ input [ type_ "text"
                 , id inputId
                 , value entry.editableColor
-                , onInput (Messages.ChangeColor entry.id) ] []
+                , onInput (ChangeColor entry.id) ] []
         , label [ class "usa-sr-only", for inputId ]
             [ text "Color value (in hexadecimal)" ]
         ]
         else [ text (paletteEntryHex entry) ]
 
-    square : PaletteEntry -> Html Message
+    square : PaletteEntry -> Html PaletteMsg
     square entry =
       div [ class "usa-color-square"
           , style (squareBgStyle entry) ]

@@ -3,9 +3,12 @@ module Main exposing (main)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
-import Messages exposing (Message)
-import Palette exposing (Palette, paletteDiv, createPalette, updatePalette)
+import Palette exposing (
+  Palette, PaletteMsg, paletteDiv, createPalette, updatePalette
+  )
 import Matrix exposing (matrixDiv)
+
+type Message = PaletteMessage PaletteMsg
 
 initialPalette : Palette
 initialPalette = createPalette
@@ -28,12 +31,17 @@ view palette =
   div [ style [ ("padding", "0 5em") ] ]
     [ styles
     , h2 [] [ text "Palette" ]
-    , paletteDiv palette True
+    , Html.map (\m -> PaletteMessage m) (paletteDiv palette True)
     , h2 [] [ text "Accessible Color Combinations" ]
     , matrixDiv palette
     ]
 
+update : Message -> Palette -> Palette
+update message palette =
+  case message of
+    PaletteMessage m -> updatePalette m palette
+
 main =
   Html.beginnerProgram { model = initialPalette
                        , view = view
-                       , update = updatePalette }
+                       , update = update }
