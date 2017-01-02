@@ -74,6 +74,11 @@ badContrastText background foreground ratio =
     " background; it is not 508-compliant, with a contrast ratio of " ++
       (humanFriendlyContrastRatio ratio) ++ "."
 
+goodContrastText : PaletteEntry -> PaletteEntry -> Float -> String
+goodContrastText background foreground ratio =
+  "The contrast ratio of " ++ foreground.name ++ " on " ++ background.name ++
+    " is " ++ (humanFriendlyContrastRatio ratio) ++ "."
+
 legend : Html msg
 legend =
   div [ class "usa-matrix-legend" ]
@@ -149,9 +154,28 @@ matrixTableRow palette =
 
         validCell : Html msg
         validCell =
-          td []
-            -- TODO: Format color square.
-            [ text (humanFriendlyContrastRatio ratio) ]
+          td [ class "usa-matrix-valid-color-combo" ]
+            [ div [ class "usa-matrix-square"
+                  , style (squareBgStyle background)
+                  , title (goodContrastText background foreground ratio)
+                  , role "presentation" ]
+                [ strong [ class "usa-sr-invisible"
+                         , ariaHidden True
+                         , style [("color", paletteEntryHex foreground)] ]
+                    [ text "Aa" ]
+                ]
+            , div [ class "usa-matrix-color-combo-description" ]
+              [ strong [] [ text (capFirst foreground.name) ]
+              , text " text on "
+              , strong [] [ text (capFirst background.name) ]
+              , text " background"
+              , span [ class "usa-sr-only" ]
+                [ text " is 508-compliant, with a contrast ratio of "
+                , text (humanFriendlyContrastRatio ratio)
+                , text "."
+                ]
+              ]
+            ]
 
         invalidCell : Html msg
         invalidCell =
