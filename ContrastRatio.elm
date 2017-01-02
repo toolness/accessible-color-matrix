@@ -34,3 +34,19 @@ contrastRatio c1 c2 =
 areColorsIndistinguishable : Color -> Color -> Bool
 areColorsIndistinguishable c1 c2 =
   contrastRatio c1 c2 < 1.1
+
+humanFriendlyContrastRatio : Float -> String
+humanFriendlyContrastRatio ratio =
+  -- Um, Elm doesn't seem to have any built-in functionality
+  -- for formatting floats to strings, so I guess we'll have
+  -- to improvise...
+  let
+    intPart = toString (floor ratio)
+    decimalPart numDigits =
+      toString (floor ((ratio - (toFloat (floor ratio))) * 10 ^ numDigits))
+    numDigits =
+      if ratio < 4 then 1 else if ratio < 5 then 2 else 0
+  in
+    intPart ++
+      (if numDigits > 0 then "." ++ decimalPart numDigits else "") ++
+        ":1"

@@ -5,7 +5,9 @@ import Html.Attributes exposing (attribute, class, scope, style, title)
 import Color exposing (white)
 
 import Symbols exposing (symbols, badContrastSvg)
-import ContrastRatio exposing (contrastRatio, areColorsIndistinguishable)
+import ContrastRatio exposing (
+  contrastRatio, areColorsIndistinguishable, humanFriendlyContrastRatio
+  )
 import Palette exposing (
   Palette, PaletteEntry, paletteEntryHex, squareBgStyle
   )
@@ -26,22 +28,6 @@ badContrastLegendText = """
   difficulty reading the text. Employing accessibility best practices
   improves the user experience for all users.
 """
-
-humanFriendlyContrastRatio : Float -> String
-humanFriendlyContrastRatio ratio =
-  -- Um, Elm doesn't seem to have any built-in functionality
-  -- for formatting floats to strings, so I guess we'll have
-  -- to improvise...
-  let
-    intPart = toString (floor ratio)
-    decimalPart numDigits =
-      toString (floor ((ratio - (toFloat (floor ratio))) * 10 ^ numDigits))
-    numDigits =
-      if ratio < 4 then 1 else if ratio < 5 then 2 else 0
-  in
-    intPart ++
-      (if numDigits > 0 then "." ++ decimalPart numDigits else "") ++
-        ":1"
 
 badContrastText : PaletteEntry -> PaletteEntry -> Float -> String
 badContrastText background foreground ratio =
