@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 import Palette exposing (Palette, paletteDiv, safeHex)
+import Matrix exposing (matrixDiv)
 import ContrastRatio exposing (contrastRatio)
 
 initialPalette : Palette
@@ -25,8 +26,10 @@ styles =
 main =
   div [ style [ ("padding", "0 5em") ] ]
     [ styles
-    , h1 [] [ text "Palette" ]
+    , h2 [] [ text "Palette" ]
     , paletteDiv initialPalette
+    , h2 [] [ text "Matrix" ]
+    , matrixDiv initialPalette
 
     -- TODO: This part is temporary.
     , p []
