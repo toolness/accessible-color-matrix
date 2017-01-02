@@ -1,0 +1,25 @@
+{
+  "name": "accessible-color-matrix",
+  "version": "1.0.0",
+  "description": "Experimental accessible color matrix tool",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "start": "webpack-dev-server --port 3000 --content-base static/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/toolness/accessible-color-matrix.git"
+  },
+  "author": "Atul Varma <varmaa@gmail.com>",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/toolness/accessible-color-matrix/issues"
+  },
+  "homepage": "https://github.com/toolness/accessible-color-matrix#readme",
+  "dependencies": {
+    "elm-webpack-loader": "^4.1.1",
+    "webpack": "^1.14.0",
+    "webpack-dev-server": "^1.16.2"
+  }
+}
