@@ -1,11 +1,14 @@
 module Palette exposing (..)
 
-import Html exposing (div, p, text, Html)
-import Html.Attributes exposing (class, style)
+import Html exposing (div, p, text, input, Html)
+import Html.Attributes exposing (class, style, type_, value)
+import Html.Events exposing (onInput)
 import Color exposing (Color, white, red)
 import Color.Convert exposing (colorToHex, hexToColor)
 
-type alias PaletteEntry = { name: String, color: Color }
+import Messages exposing (Message)
+
+type alias PaletteEntry = { id: Int, name: String, color: Color }
 
 type alias Palette = List PaletteEntry
 
@@ -30,18 +33,41 @@ squareBgStyle entry =
       [ ("box-shadow", "inset 0 0 0 1px #aeb0b5") ]
       else []
 
-paletteDiv : Palette -> Html msg
-paletteDiv palette =
+paletteDiv : Palette -> Bool -> Html Message
+paletteDiv palette isEditable =
   let
-    square : PaletteEntry -> Html msg
+    entryName : PaletteEntry -> List (Html Message)
+    entryName entry =
+      if isEditable then
+        [ input [ type_ "text"
+                , value entry.name
+                , onInput (Messages.ChangeName entry.id) ] []
+        ]
+        else [ text entry.name ]
+
+    entryHex : PaletteEntry -> List (Html msg)
+    entryHex entry =
+      if isEditable then
+        -- TODO: Allow for editing of hex value.
+        [ input [ type_ "text"
+                , value (paletteEntryHex entry) ] []
+        ]
+        else [ text (paletteEntryHex entry) ]
+
+    square : PaletteEntry -> Html Message
     square entry =
       div [ class "usa-color-square"
           , style (squareBgStyle entry) ]
         [ div [ class "usa-color-inner-content" ]
-          [ p [ class "usa-color-name" ] [ text entry.name ]
-          , p [ class "usa-color-hex" ] [ text (paletteEntryHex entry) ]
+          [ p [ class "usa-color-name" ] (entryName entry)
+          , p [ class "usa-color-hex" ] (entryHex entry)
           ]
         ]
+
+    extraStyling : List (String, String)
+    extraStyling =
+      if isEditable then [("margin-bottom", "12rem")] else []
   in
-    div [ class "usa-grid-full usa-color-row usa-primary-color-section" ]
+    div [ class "usa-grid-full usa-color-row usa-primary-color-section"
+        , style extraStyling ]
       (List.map square palette)
