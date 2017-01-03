@@ -65,6 +65,13 @@
 	  }, false);
 	}
 
+	if ('scrollRestoration' in window.history) {
+	  // Having the browser remember the user's scroll state when
+	  // they press the back button is actually probably *not* what
+	  // the user wants in this case, so we'll disable it if possible.
+	  window.history.scrollRestoration = 'manual';
+	}
+
 
 /***/ },
 /* 1 */
