@@ -44,6 +44,9 @@ actions model =
     edit =
       [ button [ onClick StartEditing ] [ text "Edit palette" ] ]
 
+    -- TODO: If enter/esc is pressed in a field while editing, it
+    -- should have the same effect as pressing the save/cancel buttons.
+    -- Well, at least enter should, since it's easily undoable.
     saveOrCancel =
       [ button
         ([ onClick FinishEditing ] ++
