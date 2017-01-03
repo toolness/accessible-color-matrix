@@ -1,19 +1,23 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
 import Palette exposing (
-  Palette, PaletteMsg, SerializedPalette, paletteDiv, createPalette,
-  updatePalette
+  Palette, PaletteMsg, SerializedPalette, paletteDiv,
+  updatePalette, deserializePalette, serializePalette
   )
 import Matrix exposing (matrixDiv)
 
-type Message = PaletteMessage PaletteMsg
+type Message = PaletteMessage PaletteMsg | LoadPalette SerializedPalette
 
 type alias Model =
   { palette: Palette
   }
+
+port updateQs : SerializedPalette -> Cmd msg
+
+port qsUpdated : (SerializedPalette -> msg) -> Sub msg
 
 defaultPalette : SerializedPalette
 defaultPalette =
@@ -38,20 +42,28 @@ update : Message -> Model -> (Model, Cmd msg)
 update message model =
   case message of
     PaletteMessage msg ->
-      ({model | palette = updatePalette msg model.palette}, Cmd.none)
+      let
+        newPalette : Palette
+        newPalette = updatePalette msg model.palette
+      in
+        ({model | palette = newPalette},
+         updateQs (serializePalette newPalette))
+    LoadPalette palette ->
+      ({model | palette = getPaletteOrDefault palette}, Cmd.none)
 
-subscriptions : Model -> Sub msg
-subscriptions model =
-  Sub.none
+getPaletteOrDefault : SerializedPalette -> Palette
+getPaletteOrDefault palette =
+  if List.length palette == 0
+    then deserializePalette defaultPalette
+    else deserializePalette palette
 
 init : SerializedPalette -> (Model, Cmd msg)
 init qsPalette =
-  let
-    palette = if List.length qsPalette == 0 then defaultPalette
-      else qsPalette
-    model = { palette = createPalette palette }
-  in
-    (model, Cmd.none)
+  ({ palette = getPaletteOrDefault qsPalette }, Cmd.none)
+
+subscriptions : Model -> Sub Message
+subscriptions model =
+  qsUpdated LoadPalette
 
 main =
   Html.programWithFlags

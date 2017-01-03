@@ -39,8 +39,8 @@ updatePalette msg palette =
           (\e -> if e.id == id then (changeColor e) else e)
           palette
 
-createPalette : SerializedPalette -> Palette
-createPalette items =
+deserializePalette : SerializedPalette -> Palette
+deserializePalette items =
   let
     entry id (name, hex) =
       { id = id
@@ -49,6 +49,10 @@ createPalette items =
       , editableColor = hex }
   in
     List.indexedMap entry items
+
+serializePalette : Palette -> SerializedPalette
+serializePalette palette =
+  List.map (\e -> (e.name, e.editableColor)) palette
 
 safeHex : String -> Color
 safeHex hex =
