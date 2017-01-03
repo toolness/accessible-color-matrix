@@ -56,6 +56,16 @@ serializePalette : Palette -> SerializedPalette
 serializePalette palette =
   List.map (\e -> (e.name, e.editableColor)) palette
 
+arePaletteEditsValid : Palette -> Bool
+arePaletteEditsValid palette =
+  let
+    isEntryValid entry =
+      case hexToColor entry.editableColor of
+        Nothing -> False
+        Just c -> True
+  in
+    List.all isEntryValid palette
+
 filterHex : String -> String
 filterHex str =
   String.left 6 str

@@ -6,7 +6,8 @@ import Html.Events exposing (onClick)
 
 import Palette exposing (
   Palette, PaletteMsg, SerializedPalette, paletteDiv,
-  updatePalette, deserializePalette, serializePalette
+  updatePalette, deserializePalette, serializePalette,
+  arePaletteEditsValid
   )
 import Matrix exposing (matrixDiv)
 
@@ -44,7 +45,11 @@ actions model =
       [ button [ onClick StartEditing ] [ text "Edit palette" ] ]
 
     saveOrCancel =
-      [ button [ onClick FinishEditing ] [ text "Save changes" ]
+      [ button
+        ([ onClick FinishEditing ] ++
+          if arePaletteEditsValid model.palette
+            then [] else [ disabled True, class "usa-button-disabled" ])
+        [ text "Save changes" ]
       , button [ onClick CancelEditing
                , class "usa-button-secondary" ] [ text "Cancel" ]
       ]
