@@ -17,6 +17,8 @@ type alias PaletteEntry =
 
 type alias Palette = List PaletteEntry
 
+type alias SerializedPalette = List (String, String)
+
 type PaletteMsg = ChangeName Int String | ChangeColor Int String
 
 updatePalette : PaletteMsg -> Palette -> Palette
@@ -37,7 +39,7 @@ updatePalette msg palette =
           (\e -> if e.id == id then (changeColor e) else e)
           palette
 
-createPalette : List (String, String) -> Palette
+createPalette : SerializedPalette -> Palette
 createPalette items =
   let
     entry id (name, hex) =

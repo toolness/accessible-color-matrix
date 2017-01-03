@@ -4,7 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 import Palette exposing (
-  Palette, PaletteMsg, paletteDiv, createPalette, updatePalette
+  Palette, PaletteMsg, SerializedPalette, paletteDiv, createPalette,
+  updatePalette
   )
 import Matrix exposing (matrixDiv)
 
@@ -14,8 +15,8 @@ type alias Model =
   { palette: Palette
   }
 
-initialPalette : Palette
-initialPalette = createPalette
+defaultPalette : Palette
+defaultPalette = createPalette
   [ ("white", "ffffff")
   , ("light", "b3efff")
   , ("bright", "00cfff")
@@ -26,7 +27,7 @@ initialPalette = createPalette
 
 model : Model
 model =
-  { palette = initialPalette
+  { palette = defaultPalette
   }
 
 view : Model -> Html Message
@@ -38,13 +39,25 @@ view model =
     , matrixDiv model.palette
     ]
 
-update : Message -> Model -> Model
+update : Message -> Model -> (Model, Cmd msg)
 update message model =
   case message of
     PaletteMessage msg ->
-      {model | palette = updatePalette msg model.palette}
+      ({model | palette = updatePalette msg model.palette}, Cmd.none)
+
+subscriptions : Model -> Sub msg
+subscriptions model =
+  Sub.none
+
+init : SerializedPalette -> (Model, Cmd msg)
+init initialPalette =
+  if List.length initialPalette == 0 then
+    (model, Cmd.none)
+    else ({model | palette = createPalette initialPalette}, Cmd.none)
 
 main =
-  Html.beginnerProgram { model = model
-                       , view = view
-                       , update = update }
+  Html.programWithFlags
+    { init = init
+    , subscriptions = subscriptions
+    , view = view
+    , update = update }
