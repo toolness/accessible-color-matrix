@@ -1,5 +1,6 @@
 module Palette exposing (..)
 
+import Char exposing (isHexDigit)
 import Html exposing (div, p, text, input, label, Html)
 import Html.Attributes exposing (class, style, type_, value, id, for)
 import Html.Events exposing (onInput)
@@ -28,8 +29,9 @@ updatePalette msg palette =
       List.map
         (\e -> if e.id == id then {e | name = newName} else e)
         palette
-    ChangeColor id newColor ->
+    ChangeColor id str ->
       let
+        newColor = filterHex str
         changeColor entry =
           case hexToColor newColor of
             Nothing -> {entry | editableColor = newColor}
@@ -45,8 +47,8 @@ deserializePalette items =
     entry id (name, hex) =
       { id = id
       , name = name
-      , color = safeHex hex
-      , editableColor = hex }
+      , color = safeHexToColor hex
+      , editableColor = filterHex hex }
   in
     List.indexedMap entry items
 
@@ -54,9 +56,16 @@ serializePalette : Palette -> SerializedPalette
 serializePalette palette =
   List.map (\e -> (e.name, e.editableColor)) palette
 
-safeHex : String -> Color
-safeHex hex =
-  case hexToColor hex of
+filterHex : String -> String
+filterHex str =
+  String.left 6 str
+    |> String.toUpper
+    |> String.trim
+    |> String.filter isHexDigit
+
+safeHexToColor : String -> Color
+safeHexToColor hex =
+  case hexToColor (filterHex hex) of
     Nothing -> red
     Just c -> c
 
