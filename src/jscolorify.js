@@ -8,6 +8,11 @@ exports.init = function init(main) {
   // to "upgrade" any elements that have been marked-up by
   // our Elm code as being in need of upgrading.
 
+  // TODO: This code doesn't currently deal with *hiding* jscolor
+  // panels, which means that it's possible for the upgraded field
+  // to disappear while the jscolor panel is open, leaving an
+  // orphaned panel lying about.
+
   if (!(window.MutationObserver && window.jscolor)) {
     return;
   }
