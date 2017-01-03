@@ -2,7 +2,12 @@
 
 var Elm = require('./Main');
 var qs = require('./qs');
-var app = Elm.Main.embed(document.getElementById('main'), qs.parse());
+var jscolorify = require('./jscolorify');
+var main = document.getElementById('main');
+
+jscolorify.init(main);
+
+var app = Elm.Main.embed(main, qs.parse());
 
 if (window.history.pushState) {
   app.ports.updateQs.subscribe(function(state) {

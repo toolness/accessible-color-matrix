@@ -1,9 +1,12 @@
 module Palette exposing (..)
 
+import Json.Decode
 import Char exposing (isHexDigit)
 import Html exposing (div, p, text, input, label, Html)
-import Html.Attributes exposing (class, style, type_, value, id, for)
-import Html.Events exposing (onInput)
+import Html.Attributes exposing (
+  class, style, type_, value, id, for, attribute
+  )
+import Html.Events exposing (onInput, on, targetValue)
 import Color exposing (Color, white, red)
 import Color.Convert exposing (colorToHex, hexToColor)
 
@@ -108,12 +111,18 @@ paletteDiv palette isEditable =
         ]
         else [ text entry.name ]
 
+    onJscolorChange : (String -> PaletteMsg) -> Html.Attribute PaletteMsg
+    onJscolorChange tagger =
+      on "change" (Json.Decode.map tagger targetValue)
+
     entryHex : PaletteEntry -> List (Html PaletteMsg)
     entryHex entry =
       if isEditable then let inputId = makeUniqueId "color_value" entry in
         [ input [ type_ "text"
                 , id inputId
                 , value entry.editableColor
+                , attribute "data-jscolorify" ""
+                , onJscolorChange (ChangeColor entry.id)
                 , onInput (ChangeColor entry.id) ] []
         , label [ class "usa-sr-only", for inputId ]
             [ text "Color value (in hexadecimal)" ]
