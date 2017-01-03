@@ -15,8 +15,8 @@ type alias Model =
   { palette: Palette
   }
 
-defaultPalette : Palette
-defaultPalette = createPalette
+defaultPalette : SerializedPalette
+defaultPalette =
   [ ("white", "ffffff")
   , ("light", "b3efff")
   , ("bright", "00cfff")
@@ -24,11 +24,6 @@ defaultPalette = createPalette
   , ("dark", "1c304a")
   , ("black", "000000")
   ]
-
-model : Model
-model =
-  { palette = defaultPalette
-  }
 
 view : Model -> Html Message
 view model =
@@ -50,10 +45,13 @@ subscriptions model =
   Sub.none
 
 init : SerializedPalette -> (Model, Cmd msg)
-init initialPalette =
-  if List.length initialPalette == 0 then
+init qsPalette =
+  let
+    palette = if List.length qsPalette == 0 then defaultPalette
+      else qsPalette
+    model = { palette = createPalette palette }
+  in
     (model, Cmd.none)
-    else ({model | palette = createPalette initialPalette}, Cmd.none)
 
 main =
   Html.programWithFlags
