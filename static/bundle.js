@@ -48,7 +48,12 @@
 
 	var Elm = __webpack_require__(1);
 	var qs = __webpack_require__(2);
-	var app = Elm.Main.embed(document.getElementById('main'), qs.parse());
+	var jscolorify = __webpack_require__(6);
+	var main = document.getElementById('main');
+
+	jscolorify.init(main);
+
+	var app = Elm.Main.embed(main, qs.parse());
 
 	if (window.history.pushState) {
 	  app.ports.updateQs.subscribe(function(state) {
@@ -9534,6 +9539,12 @@
 				_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '12rem'},
 				_1: {ctor: '[]'}
 			} : {ctor: '[]'};
+			var onJscolorChange = function (tagger) {
+				return A2(
+					_elm_lang$html$Html_Events$on,
+					'change',
+					A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
+			};
 			var makeUniqueId = F2(
 				function (prefix, entry) {
 					return A2(
@@ -9617,9 +9628,18 @@
 										_0: _elm_lang$html$Html_Attributes$value(entry.editableColor),
 										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Events$onInput(
-												_toolness$accessible_color_matrix$Palette$ChangeColor(entry.id)),
-											_1: {ctor: '[]'}
+											_0: A2(_elm_lang$html$Html_Attributes$attribute, 'data-jscolorify', ''),
+											_1: {
+												ctor: '::',
+												_0: onJscolorChange(
+													_toolness$accessible_color_matrix$Palette$ChangeColor(entry.id)),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onInput(
+														_toolness$accessible_color_matrix$Palette$ChangeColor(entry.id)),
+													_1: {ctor: '[]'}
+												}
+											}
 										}
 									}
 								}
@@ -10862,6 +10882,49 @@
 	  if (!name) return '';
 	  return encodeURIComponent(stringifyPrimitive(name)) + eq +
 	         encodeURIComponent(stringifyPrimitive(obj));
+	};
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	exports.init = function init(main) {
+	  // Elm's apparent lack of virtual DOM lifecycle management
+	  // functions (a la React), as well as its lack of support
+	  // for Custom Elements, makes it difficult to reuse
+	  // third-party JS UI code.
+	  //
+	  // For now, we'll have to resort to MutationObservers
+	  // to "upgrade" any elements that have been marked-up by
+	  // our Elm code as being in need of upgrading.
+
+	  // TODO: This code doesn't currently deal with *hiding* jscolor
+	  // panels, which means that it's possible for the upgraded field
+	  // to disappear while the jscolor panel is open, leaving an
+	  // orphaned panel lying about.
+
+	  if (!(window.MutationObserver && window.jscolor)) {
+	    return;
+	  }
+
+	  var observer = new MutationObserver(function(mutations) {
+	    var els = main.querySelectorAll('[data-jscolorify]');
+	    var el;
+
+	    for (var i = 0; i < els.length; i++) {
+	      el = els[i];
+	      if (!el._hasBeenJscolorified) {
+	        el._hasBeenJscolorified = true;
+	        new jscolor(el);
+	      }
+	    }
+	  });
+
+	  observer.observe(main, {
+	    subtree: true,
+	    childList: true
+	  });
 	};
 
 
