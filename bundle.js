@@ -9431,13 +9431,33 @@
 				_1: {ctor: '[]'}
 			} : {ctor: '[]'});
 	};
-	var _toolness$accessible_color_matrix$Palette$safeHex = function (hex) {
-		var _p0 = _eskimoblood$elm_color_extra$Color_Convert$hexToColor(hex);
+	var _toolness$accessible_color_matrix$Palette$filterHex = function (str) {
+		return A2(
+			_elm_lang$core$String$filter,
+			_elm_lang$core$Char$isHexDigit,
+			_elm_lang$core$String$trim(
+				_elm_lang$core$String$toUpper(
+					A2(_elm_lang$core$String$left, 6, str))));
+	};
+	var _toolness$accessible_color_matrix$Palette$safeHexToColor = function (hex) {
+		var _p0 = _eskimoblood$elm_color_extra$Color_Convert$hexToColor(
+			_toolness$accessible_color_matrix$Palette$filterHex(hex));
 		if (_p0.ctor === 'Nothing') {
 			return _elm_lang$core$Color$red;
 		} else {
 			return _p0._0;
 		}
+	};
+	var _toolness$accessible_color_matrix$Palette$arePaletteEditsValid = function (palette) {
+		var isEntryValid = function (entry) {
+			var _p1 = _eskimoblood$elm_color_extra$Color_Convert$hexToColor(entry.editableColor);
+			if (_p1.ctor === 'Nothing') {
+				return false;
+			} else {
+				return true;
+			}
+		};
+		return A2(_elm_lang$core$List$all, isEntryValid, palette);
 	};
 	var _toolness$accessible_color_matrix$Palette$serializePalette = function (palette) {
 		return A2(
@@ -9449,48 +9469,48 @@
 	};
 	var _toolness$accessible_color_matrix$Palette$deserializePalette = function (items) {
 		var entry = F2(
-			function (id, _p1) {
-				var _p2 = _p1;
-				var _p3 = _p2._1;
+			function (id, _p2) {
+				var _p3 = _p2;
+				var _p4 = _p3._1;
 				return {
 					id: id,
-					name: _p2._0,
-					color: _toolness$accessible_color_matrix$Palette$safeHex(_p3),
-					editableColor: _p3
+					name: _p3._0,
+					color: _toolness$accessible_color_matrix$Palette$safeHexToColor(_p4),
+					editableColor: _toolness$accessible_color_matrix$Palette$filterHex(_p4)
 				};
 			});
 		return A2(_elm_lang$core$List$indexedMap, entry, items);
 	};
 	var _toolness$accessible_color_matrix$Palette$updatePalette = F2(
 		function (msg, palette) {
-			var _p4 = msg;
-			if (_p4.ctor === 'ChangeName') {
+			var _p5 = msg;
+			if (_p5.ctor === 'ChangeName') {
 				return A2(
 					_elm_lang$core$List$map,
 					function (e) {
-						return _elm_lang$core$Native_Utils.eq(e.id, _p4._0) ? _elm_lang$core$Native_Utils.update(
+						return _elm_lang$core$Native_Utils.eq(e.id, _p5._0) ? _elm_lang$core$Native_Utils.update(
 							e,
-							{name: _p4._1}) : e;
+							{name: _p5._1}) : e;
 					},
 					palette);
 			} else {
-				var _p6 = _p4._1;
+				var newColor = _toolness$accessible_color_matrix$Palette$filterHex(_p5._1);
 				var changeColor = function (entry) {
-					var _p5 = _eskimoblood$elm_color_extra$Color_Convert$hexToColor(_p6);
-					if (_p5.ctor === 'Nothing') {
+					var _p6 = _eskimoblood$elm_color_extra$Color_Convert$hexToColor(newColor);
+					if (_p6.ctor === 'Nothing') {
 						return _elm_lang$core$Native_Utils.update(
 							entry,
-							{editableColor: _p6});
+							{editableColor: newColor});
 					} else {
 						return _elm_lang$core$Native_Utils.update(
 							entry,
-							{color: _p5._0, editableColor: _p6});
+							{color: _p6._0, editableColor: newColor});
 					}
 				};
 				return A2(
 					_elm_lang$core$List$map,
 					function (e) {
-						return _elm_lang$core$Native_Utils.eq(e.id, _p4._0) ? changeColor(e) : e;
+						return _elm_lang$core$Native_Utils.eq(e.id, _p5._0) ? changeColor(e) : e;
 					},
 					palette);
 			}
@@ -10453,11 +10473,22 @@
 			ctor: '::',
 			_0: A2(
 				_elm_lang$html$Html$button,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onClick(_toolness$accessible_color_matrix$Main$FinishEditing),
-					_1: {ctor: '[]'}
-				},
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(_toolness$accessible_color_matrix$Main$FinishEditing),
+						_1: {ctor: '[]'}
+					},
+					_toolness$accessible_color_matrix$Palette$arePaletteEditsValid(model.palette) ? {ctor: '[]'} : {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$disabled(true),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('usa-button-disabled'),
+							_1: {ctor: '[]'}
+						}
+					}),
 				{
 					ctor: '::',
 					_0: _elm_lang$html$Html$text('Save changes'),
