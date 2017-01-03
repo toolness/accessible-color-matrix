@@ -2,6 +2,7 @@ port module Main exposing (main)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 
 import Palette exposing (
   Palette, PaletteMsg, SerializedPalette, paletteDiv,
@@ -9,10 +10,17 @@ import Palette exposing (
   )
 import Matrix exposing (matrixDiv)
 
-type Message = PaletteMessage PaletteMsg | LoadPalette SerializedPalette
+type Message =
+  PaletteMessage PaletteMsg
+  | LoadPalette SerializedPalette
+  | StartEditing
+  | FinishEditing
+  | CancelEditing
 
 type alias Model =
   { palette: Palette
+  , isEditing: Bool
+  , lastPalette: Palette
   }
 
 port updateQs : SerializedPalette -> Cmd msg
@@ -29,11 +37,28 @@ defaultPalette =
   , ("black", "000000")
   ]
 
+actions : Model -> Html Message
+actions model =
+  let
+    edit =
+      [ button [ onClick StartEditing ] [ text "Edit palette" ] ]
+
+    saveOrCancel =
+      [ button [ onClick FinishEditing ] [ text "Save changes" ]
+      , button [ onClick CancelEditing
+               , class "usa-button-secondary" ] [ text "Cancel" ]
+      ]
+  in
+    div [ class "usa-grid-full usa-color-row" ]
+      (if model.isEditing then saveOrCancel else edit)
+
 view : Model -> Html Message
 view model =
   div []
     [ h2 [] [ text "Palette" ]
-    , Html.map (\m -> PaletteMessage m) (paletteDiv model.palette True)
+    , Html.map (\m -> PaletteMessage m)
+      (paletteDiv model.palette model.isEditing)
+    , actions model
     , h2 [] [ text "Accessible Color Combinations" ]
     , matrixDiv model.palette
     ]
@@ -46,10 +71,19 @@ update message model =
         newPalette : Palette
         newPalette = updatePalette msg model.palette
       in
-        ({model | palette = newPalette},
-         updateQs (serializePalette newPalette))
+        ({model | palette = newPalette}, Cmd.none)
     LoadPalette palette ->
-      ({model | palette = getPaletteOrDefault palette}, Cmd.none)
+      ({model | palette = getPaletteOrDefault palette
+              , isEditing = False}, Cmd.none)
+    StartEditing ->
+      ({model | isEditing = True
+              , lastPalette = model.palette}, Cmd.none)
+    FinishEditing ->
+      ({model | isEditing = False},
+        updateQs (serializePalette model.palette))
+    CancelEditing ->
+      ({model | isEditing = False
+              , palette = model.lastPalette}, Cmd.none)
 
 getPaletteOrDefault : SerializedPalette -> Palette
 getPaletteOrDefault palette =
@@ -59,7 +93,9 @@ getPaletteOrDefault palette =
 
 init : SerializedPalette -> (Model, Cmd msg)
 init qsPalette =
-  ({ palette = getPaletteOrDefault qsPalette }, Cmd.none)
+  ({ palette = getPaletteOrDefault qsPalette
+   , isEditing = False
+   , lastPalette = [] }, Cmd.none)
 
 subscriptions : Model -> Sub Message
 subscriptions model =
