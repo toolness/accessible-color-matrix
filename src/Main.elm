@@ -55,11 +55,11 @@ actions model =
 view : Model -> Html Message
 view model =
   div []
-    [ h2 [] [ text "Palette" ]
+    [ h1 [] [ text "Accessible color palette builder" ]
     , Html.map (\m -> PaletteMessage m)
       (paletteDiv model.palette model.isEditing)
     , actions model
-    , h2 [] [ text "Accessible Color Combinations" ]
+    , h2 [] [ text "Accessible color combinations" ]
     , matrixDiv model.palette
     ]
 
