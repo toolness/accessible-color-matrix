@@ -9541,11 +9541,11 @@
 		});
 	var _toolness$accessible_color_matrix$Palette$paletteDiv = F2(
 		function (palette, isEditable) {
-			var extraStyling = isEditable ? {
-				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '12rem'},
-				_1: {ctor: '[]'}
-			} : {ctor: '[]'};
+			var isOdd = function (i) {
+				return _elm_lang$core$Native_Utils.eq(
+					A2(_elm_lang$core$Basics_ops['%'], i, 2),
+					1);
+			};
 			var onJscolorChange = function (tagger) {
 				return A2(
 					_elm_lang$html$Html_Events$on,
@@ -9682,66 +9682,93 @@
 					};
 				}
 			};
-			var square = function (entry) {
-				return A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('usa-color-square'),
-						_1: {
+			var square = F2(
+				function (i, entry) {
+					return A2(
+						_elm_lang$html$Html$div,
+						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$style(
-								_toolness$accessible_color_matrix$Palette$squareBgStyle(entry)),
-							_1: {ctor: '[]'}
-						}
-					},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$div,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('usa-color-inner-content'),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$p,
-									{
+							_0: _elm_lang$html$Html_Attributes$classList(
+								{
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'usa-color-square', _1: true},
+									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('usa-color-name'),
+										_0: {
+											ctor: '_Tuple2',
+											_0: 'usa-mobile-end-row',
+											_1: isOdd(i)
+										},
 										_1: {ctor: '[]'}
-									},
-									entryName(entry)),
-								_1: {
+									}
+								}),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$style(
+									_toolness$accessible_color_matrix$Palette$squareBgStyle(entry)),
+								_1: {ctor: '[]'}
+							}
+						},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('usa-color-inner-content'),
+									_1: {ctor: '[]'}
+								},
+								{
 									ctor: '::',
 									_0: A2(
 										_elm_lang$html$Html$p,
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('usa-color-hex'),
+											_0: _elm_lang$html$Html_Attributes$class('usa-color-name'),
 											_1: {ctor: '[]'}
 										},
-										entryHex(entry)),
-									_1: {ctor: '[]'}
-								}
-							}),
-						_1: {ctor: '[]'}
-					});
-			};
+										entryName(entry)),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$p,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$class('usa-color-hex'),
+												_1: {ctor: '[]'}
+											},
+											entryHex(entry)),
+										_1: {ctor: '[]'}
+									}
+								}),
+							_1: {ctor: '[]'}
+						});
+				});
 			return A2(
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('usa-grid-full usa-color-row usa-primary-color-section'),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$style(extraStyling),
-						_1: {ctor: '[]'}
-					}
+					_0: _elm_lang$html$Html_Attributes$classList(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'usa-grid-full', _1: true},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'usa-color-row', _1: true},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'usa-primary-color-section', _1: true},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'palette-is-editable', _1: isEditable},
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}),
+					_1: {ctor: '[]'}
 				},
-				A2(_elm_lang$core$List$map, square, palette));
+				A2(_elm_lang$core$List$indexedMap, square, palette));
 		});
 
 	var _toolness$accessible_color_matrix$Symbols$badContrastId = 'usa-matrix-bad-contrast-ratio';
