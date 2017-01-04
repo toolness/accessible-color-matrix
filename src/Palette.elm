@@ -4,7 +4,7 @@ import Json.Decode
 import Char exposing (isHexDigit)
 import Html exposing (div, p, text, input, label, Html)
 import Html.Attributes exposing (
-  class, style, type_, value, id, for, attribute
+  class, classList, style, type_, value, id, for, attribute
   )
 import Html.Events exposing (onInput, on, targetValue)
 import Color exposing (Color, white, red)
@@ -129,9 +129,14 @@ paletteDiv palette isEditable =
         ]
         else [ text (paletteEntryHex entry) ]
 
-    square : PaletteEntry -> Html PaletteMsg
-    square entry =
-      div [ class "usa-color-square"
+    isOdd : Int -> Bool
+    isOdd i = i % 2 == 1
+
+    square : Int -> PaletteEntry -> Html PaletteMsg
+    square i entry =
+      div [ classList [ ("usa-color-square", True)
+                      , ("usa-mobile-end-row", isOdd i)
+                      ]
           , style (squareBgStyle entry) ]
         [ div [ class "usa-color-inner-content" ]
           [ p [ class "usa-color-name" ] (entryName entry)
@@ -145,4 +150,4 @@ paletteDiv palette isEditable =
   in
     div [ class "usa-grid-full usa-color-row usa-primary-color-section"
         , style extraStyling ]
-      (List.map square palette)
+      (List.indexedMap square palette)
