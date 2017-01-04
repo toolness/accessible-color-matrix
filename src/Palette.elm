@@ -143,11 +143,10 @@ paletteDiv palette isEditable =
           , p [ class "usa-color-hex" ] (entryHex entry)
           ]
         ]
-
-    extraStyling : List (String, String)
-    extraStyling =
-      if isEditable then [("margin-bottom", "12rem")] else []
   in
-    div [ class "usa-grid-full usa-color-row usa-primary-color-section"
-        , style extraStyling ]
+    div [ classList [ ("usa-grid-full", True)
+                    , ("usa-color-row", True)
+                    , ("usa-primary-color-section", True)
+                    , ("palette-is-editable", isEditable)
+                    ] ]
       (List.indexedMap square palette)
