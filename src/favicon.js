@@ -1,6 +1,8 @@
 var FAVICON_WIDTH = 16;
 var FAVICON_SQUARES_PER_SIDE = 4;
 
+var gDefaultHref = null;
+
 function drawPalette(canvas, squaresPerSide, colors) {
   var ctx = canvas.getContext('2d');
   var squareWidth = canvas.width / squaresPerSide;
@@ -35,9 +37,20 @@ function createFaviconURL(colors) {
 
 function setFavicon(colors) {
   var link = document.querySelector('link[rel="icon"]');
+  var href;
 
-  if (link && colors.length) {
-    link.setAttribute('href', createFaviconURL(colors));
+  if (link) {
+    if (gDefaultHref === null) {
+      gDefaultHref = link.getAttribute('href');
+    }
+
+    href = gDefaultHref;
+
+    if (colors.length) {
+      href = createFaviconURL(colors);
+    }
+
+    link.setAttribute('href', href);
   }
 }
 
