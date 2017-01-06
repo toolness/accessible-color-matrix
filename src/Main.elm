@@ -3,6 +3,7 @@ port module Main exposing (main)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Color.Convert exposing (colorToHex)
 
 import Palette exposing (
   Palette, PaletteMsg, SerializedPalette, paletteDiv,
@@ -27,6 +28,8 @@ type alias Model =
 port updateQs : SerializedPalette -> Cmd msg
 
 port qsUpdated : (SerializedPalette -> msg) -> Sub msg
+
+port updateFavicon : List String -> Cmd msg
 
 defaultPalette : SerializedPalette
 defaultPalette =
@@ -71,6 +74,12 @@ view model =
     , matrixDiv model.palette
     ]
 
+updateFaviconFromPalette : Palette -> Cmd msg
+updateFaviconFromPalette palette =
+  List.map .color palette
+    |> List.map colorToHex
+    |> updateFavicon
+
 update : Message -> Model -> (Model, Cmd msg)
 update message model =
   case message of
@@ -81,14 +90,20 @@ update message model =
       in
         ({model | palette = newPalette}, Cmd.none)
     LoadPalette palette ->
-      ({model | palette = getPaletteOrDefault palette
-              , isEditing = False}, Cmd.none)
+      let
+        newPalette : Palette
+        newPalette = getPaletteOrDefault palette
+      in
+        ({model | palette = newPalette
+                , isEditing = False},
+          updateFaviconFromPalette newPalette)
     StartEditing ->
       ({model | isEditing = True
               , lastPalette = model.palette}, Cmd.none)
     FinishEditing ->
       ({model | isEditing = False},
-        updateQs (serializePalette model.palette))
+        Cmd.batch [ updateQs (serializePalette model.palette)
+                  , updateFaviconFromPalette model.palette ])
     CancelEditing ->
       ({model | isEditing = False
               , palette = model.lastPalette}, Cmd.none)
@@ -101,9 +116,13 @@ getPaletteOrDefault palette =
 
 init : SerializedPalette -> (Model, Cmd msg)
 init qsPalette =
-  ({ palette = getPaletteOrDefault qsPalette
-   , isEditing = False
-   , lastPalette = [] }, Cmd.none)
+  let
+    palette = getPaletteOrDefault qsPalette
+  in
+    ({ palette = palette
+     , isEditing = False
+     , lastPalette = [] },
+     updateFaviconFromPalette palette)
 
 subscriptions : Model -> Sub Message
 subscriptions model =

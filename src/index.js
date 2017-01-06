@@ -6,30 +6,22 @@ var jscolorify = require('./jscolorify');
 var setFavicon = require('./favicon');
 var main = document.getElementById('main');
 
-function setFaviconFromState(state) {
-  setFavicon(state.map(function(pair) {
-    return pair[1];
-  }));
-}
-
 jscolorify.init(main);
 
 var initialState = qs.parse();
 var app = Elm.Main.embed(main, initialState);
 
-setFaviconFromState(initialState);
+app.ports.updateFavicon.subscribe(setFavicon);
 
 if (window.history.pushState) {
   app.ports.updateQs.subscribe(function(state) {
     window.history.pushState({}, "", '?' + qs.stringify(state));
-    setFaviconFromState(state);
   });
 
   window.addEventListener('popstate', function(e) {
     var state = qs.parse();
 
     app.ports.qsUpdated.send(state);
-    setFaviconFromState(state);
   }, false);
 }
 

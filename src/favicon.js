@@ -12,7 +12,7 @@ function drawPalette(canvas, squaresPerSide, colors) {
 
   for (row = 0; row < squaresPerSide; row += 1) {
     for (col = 0; col < squaresPerSide; col += 1) {
-      ctx.fillStyle = '#' + colors[colorIndex];
+      ctx.fillStyle = colors[colorIndex];
       ctx.fillRect(
         col * squareWidth,
         row * squareWidth,
