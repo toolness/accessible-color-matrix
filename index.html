@@ -31,6 +31,18 @@ main {
   margin-bottom: 12rem;
 }
 
+ul.usa-primary-color-section {
+  /* USWDS <ul>'s default to "display: table", so we'll revert
+   * them to block. */
+  display: block;
+}
+
+ul.usa-primary-color-section li:before {
+  /* USWDS <li>'s display their bullets via the CSS content property,
+   * so we'll revert it. */
+  content: normal;
+}
+
 button.palette-action-remove.palette-entry-is-light {
   /* Use USWDS "gray-dark" if we're displaying the button on
    * a light background. */
