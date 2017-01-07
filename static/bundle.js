@@ -52,30 +52,22 @@
 	var setFavicon = __webpack_require__(7);
 	var main = document.getElementById('main');
 
-	function setFaviconFromState(state) {
-	  setFavicon(state.map(function(pair) {
-	    return pair[1];
-	  }));
-	}
-
 	jscolorify.init(main);
 
 	var initialState = qs.parse();
 	var app = Elm.Main.embed(main, initialState);
 
-	setFaviconFromState(initialState);
+	app.ports.updateFavicon.subscribe(setFavicon);
 
 	if (window.history.pushState) {
 	  app.ports.updateQs.subscribe(function(state) {
 	    window.history.pushState({}, "", '?' + qs.stringify(state));
-	    setFaviconFromState(state);
 	  });
 
 	  window.addEventListener('popstate', function(e) {
 	    var state = qs.parse();
 
 	    app.ports.qsUpdated.send(state);
-	    setFaviconFromState(state);
 	  }, false);
 	}
 
@@ -9382,6 +9374,19 @@
 			return {l: a, a: b, b: c};
 		});
 
+	var _toolness$accessible_color_matrix$Accessibility$role = function (val) {
+		return A2(_elm_lang$html$Html_Attributes$attribute, 'role', val);
+	};
+	var _toolness$accessible_color_matrix$Accessibility$ariaHidden = function (val) {
+		return A2(
+			_elm_lang$html$Html_Attributes$attribute,
+			'aria-hidden',
+			val ? 'true' : 'false');
+	};
+	var _toolness$accessible_color_matrix$Accessibility$ariaLabel = function (val) {
+		return A2(_elm_lang$html$Html_Attributes$attribute, 'aria-label', val);
+	};
+
 	var _toolness$accessible_color_matrix$ContrastRatio$humanFriendlyContrastRatio = function (ratio) {
 		var numDigits = (_elm_lang$core$Native_Utils.cmp(ratio, 4) < 0) ? 1 : ((_elm_lang$core$Native_Utils.cmp(ratio, 5) < 0) ? 2 : 0);
 		var decimalPart = function (numDigits) {
@@ -9459,11 +9464,13 @@
 	};
 	var _toolness$accessible_color_matrix$Palette$filterHex = function (str) {
 		return A2(
-			_elm_lang$core$String$filter,
-			_elm_lang$core$Char$isHexDigit,
-			_elm_lang$core$String$trim(
-				_elm_lang$core$String$toUpper(
-					A2(_elm_lang$core$String$left, 6, str))));
+			_elm_lang$core$String$left,
+			6,
+			A2(
+				_elm_lang$core$String$filter,
+				_elm_lang$core$Char$isHexDigit,
+				_elm_lang$core$String$trim(
+					_elm_lang$core$String$toUpper(str))));
 	};
 	var _toolness$accessible_color_matrix$Palette$safeHexToColor = function (hex) {
 		var _p0 = _eskimoblood$elm_color_extra$Color_Convert$hexToColor(
@@ -9493,58 +9500,103 @@
 			},
 			palette);
 	};
-	var _toolness$accessible_color_matrix$Palette$deserializePalette = function (items) {
-		var entry = F2(
-			function (id, _p2) {
-				var _p3 = _p2;
-				var _p4 = _p3._1;
-				return {
-					id: id,
-					name: _p3._0,
-					color: _toolness$accessible_color_matrix$Palette$safeHexToColor(_p4),
-					editableColor: _toolness$accessible_color_matrix$Palette$filterHex(_p4)
-				};
-			});
-		return A2(_elm_lang$core$List$indexedMap, entry, items);
-	};
 	var _toolness$accessible_color_matrix$Palette$updatePalette = F2(
 		function (msg, palette) {
-			var _p5 = msg;
-			if (_p5.ctor === 'ChangeName') {
-				return A2(
-					_elm_lang$core$List$map,
-					function (e) {
-						return _elm_lang$core$Native_Utils.eq(e.id, _p5._0) ? _elm_lang$core$Native_Utils.update(
-							e,
-							{name: _p5._1}) : e;
-					},
-					palette);
-			} else {
-				var newColor = _toolness$accessible_color_matrix$Palette$filterHex(_p5._1);
-				var changeColor = function (entry) {
-					var _p6 = _eskimoblood$elm_color_extra$Color_Convert$hexToColor(newColor);
-					if (_p6.ctor === 'Nothing') {
-						return _elm_lang$core$Native_Utils.update(
-							entry,
-							{editableColor: newColor});
-					} else {
-						return _elm_lang$core$Native_Utils.update(
-							entry,
-							{color: _p6._0, editableColor: newColor});
-					}
-				};
-				return A2(
-					_elm_lang$core$List$map,
-					function (e) {
-						return _elm_lang$core$Native_Utils.eq(e.id, _p5._0) ? changeColor(e) : e;
-					},
-					palette);
+			var _p2 = msg;
+			switch (_p2.ctor) {
+				case 'ChangeName':
+					return A2(
+						_elm_lang$core$List$map,
+						function (e) {
+							return _elm_lang$core$Native_Utils.eq(e.id, _p2._0) ? _elm_lang$core$Native_Utils.update(
+								e,
+								{name: _p2._1}) : e;
+						},
+						palette);
+				case 'ChangeColor':
+					var newColor = _toolness$accessible_color_matrix$Palette$filterHex(_p2._1);
+					var changeColor = function (entry) {
+						var _p3 = _eskimoblood$elm_color_extra$Color_Convert$hexToColor(newColor);
+						if (_p3.ctor === 'Nothing') {
+							return _elm_lang$core$Native_Utils.update(
+								entry,
+								{editableColor: newColor});
+						} else {
+							return _elm_lang$core$Native_Utils.update(
+								entry,
+								{color: _p3._0, editableColor: newColor});
+						}
+					};
+					return A2(
+						_elm_lang$core$List$map,
+						function (e) {
+							return _elm_lang$core$Native_Utils.eq(e.id, _p2._0) ? changeColor(e) : e;
+						},
+						palette);
+				case 'Remove':
+					return A2(
+						_elm_lang$core$List$filter,
+						function (e) {
+							return !_elm_lang$core$Native_Utils.eq(e.id, _p2._0);
+						},
+						palette);
+				default:
+					var newColor = _elm_lang$core$Color$red;
+					var newId = A3(
+						_elm_lang$core$List$foldl,
+						_elm_lang$core$Basics$max,
+						0,
+						A2(
+							_elm_lang$core$List$map,
+							function (_) {
+								return _.id;
+							},
+							palette)) + 1;
+					return A2(
+						_elm_lang$core$Basics_ops['++'],
+						palette,
+						{
+							ctor: '::',
+							_0: {
+								id: newId,
+								name: A2(
+									_elm_lang$core$Basics_ops['++'],
+									'Color ',
+									_elm_lang$core$Basics$toString(newId + 1)),
+								color: newColor,
+								editableColor: _toolness$accessible_color_matrix$Palette$filterHex(
+									_eskimoblood$elm_color_extra$Color_Convert$colorToHex(newColor))
+							},
+							_1: {ctor: '[]'}
+						});
 			}
 		});
+	var _toolness$accessible_color_matrix$Palette$maxPaletteEntries = 6;
+	var _toolness$accessible_color_matrix$Palette$deserializePalette = function (items) {
+		var entry = F2(
+			function (id, _p4) {
+				var _p5 = _p4;
+				var _p6 = _p5._1;
+				return {
+					id: id,
+					name: _p5._0,
+					color: _toolness$accessible_color_matrix$Palette$safeHexToColor(_p6),
+					editableColor: _toolness$accessible_color_matrix$Palette$filterHex(_p6)
+				};
+			});
+		return A2(
+			_elm_lang$core$List$indexedMap,
+			entry,
+			A2(_elm_lang$core$List$take, _toolness$accessible_color_matrix$Palette$maxPaletteEntries, items));
+	};
 	var _toolness$accessible_color_matrix$Palette$PaletteEntry = F4(
 		function (a, b, c, d) {
 			return {id: a, name: b, color: c, editableColor: d};
 		});
+	var _toolness$accessible_color_matrix$Palette$Add = {ctor: 'Add'};
+	var _toolness$accessible_color_matrix$Palette$Remove = function (a) {
+		return {ctor: 'Remove', _0: a};
+	};
 	var _toolness$accessible_color_matrix$Palette$ChangeColor = F2(
 		function (a, b) {
 			return {ctor: 'ChangeColor', _0: a, _1: b};
@@ -9553,8 +9605,49 @@
 		function (a, b) {
 			return {ctor: 'ChangeName', _0: a, _1: b};
 		});
-	var _toolness$accessible_color_matrix$Palette$paletteDiv = F2(
+	var _toolness$accessible_color_matrix$Palette$paletteUl = F2(
 		function (palette, isEditable) {
+			var addActions = (isEditable && (_elm_lang$core$Native_Utils.cmp(
+				_elm_lang$core$List$length(palette),
+				_toolness$accessible_color_matrix$Palette$maxPaletteEntries) < 0)) ? {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$li,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('usa-color-square palette-action-add-wrapper'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$button,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('usa-button-outline'),
+								_1: {
+									ctor: '::',
+									_0: _toolness$accessible_color_matrix$Accessibility$ariaLabel('Add a new color'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$title('Add a new color'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(_toolness$accessible_color_matrix$Palette$Add),
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('+'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			} : {ctor: '[]'};
 			var isOdd = function (i) {
 				return _elm_lang$core$Native_Utils.eq(
 					A2(_elm_lang$core$Basics_ops['%'], i, 2),
@@ -9698,8 +9791,62 @@
 			};
 			var square = F2(
 				function (i, entry) {
+					var removeActions = function () {
+						if (isEditable && (_elm_lang$core$Native_Utils.cmp(
+							_elm_lang$core$List$length(palette),
+							1) > 0)) {
+							var isLight = _elm_lang$core$Native_Utils.cmp(
+								A2(_toolness$accessible_color_matrix$ContrastRatio$contrastRatio, entry.color, _elm_lang$core$Color$black),
+								A2(_toolness$accessible_color_matrix$ContrastRatio$contrastRatio, entry.color, _elm_lang$core$Color$white)) > 0;
+							var labelText = A2(_elm_lang$core$Basics_ops['++'], 'Remove color ', entry.name);
+							return {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$button,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(
+											_toolness$accessible_color_matrix$Palette$Remove(entry.id)),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$classList(
+												{
+													ctor: '::',
+													_0: {ctor: '_Tuple2', _0: 'usa-button-outline-inverse', _1: true},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple2', _0: 'palette-action-remove', _1: true},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple2', _0: 'palette-entry-is-light', _1: isLight},
+															_1: {ctor: '[]'}
+														}
+													}
+												}),
+											_1: {
+												ctor: '::',
+												_0: _toolness$accessible_color_matrix$Accessibility$ariaLabel(labelText),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$title(labelText),
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('×'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							};
+						} else {
+							return {ctor: '[]'};
+						}
+					}();
 					return A2(
-						_elm_lang$html$Html$div,
+						_elm_lang$html$Html$li,
 						{
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$classList(
@@ -9723,43 +9870,46 @@
 								_1: {ctor: '[]'}
 							}
 						},
-						{
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$div,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('usa-color-inner-content'),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$p,
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('usa-color-name'),
-											_1: {ctor: '[]'}
-										},
-										entryName(entry)),
-									_1: {
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							removeActions,
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$div,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('usa-color-inner-content'),
+										_1: {ctor: '[]'}
+									},
+									{
 										ctor: '::',
 										_0: A2(
 											_elm_lang$html$Html$p,
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$class('usa-color-hex'),
+												_0: _elm_lang$html$Html_Attributes$class('usa-color-name'),
 												_1: {ctor: '[]'}
 											},
-											entryHex(entry)),
-										_1: {ctor: '[]'}
-									}
-								}),
-							_1: {ctor: '[]'}
-						});
+											entryName(entry)),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$p,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$class('usa-color-hex'),
+													_1: {ctor: '[]'}
+												},
+												entryHex(entry)),
+											_1: {ctor: '[]'}
+										}
+									}),
+								_1: {ctor: '[]'}
+							}));
 				});
 			return A2(
-				_elm_lang$html$Html$div,
+				_elm_lang$html$Html$ul,
 				{
 					ctor: '::',
 					_0: _elm_lang$html$Html_Attributes$classList(
@@ -9782,7 +9932,10 @@
 						}),
 					_1: {ctor: '[]'}
 				},
-				A2(_elm_lang$core$List$indexedMap, square, palette));
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					A2(_elm_lang$core$List$indexedMap, square, palette),
+					addActions));
 		});
 
 	var _toolness$accessible_color_matrix$Symbols$badContrastId = 'usa-matrix-bad-contrast-ratio';
@@ -9890,91 +10043,6 @@
 				A2(_elm_lang$core$String$left, 1, str)),
 			A2(_elm_lang$core$String$dropLeft, 1, str));
 	};
-	var _toolness$accessible_color_matrix$Matrix$goodContrastText = F3(
-		function (background, foreground, ratio) {
-			return A2(
-				_elm_lang$core$Basics_ops['++'],
-				'The contrast ratio of ',
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					foreground.name,
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						' on ',
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							background.name,
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								' is ',
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									_toolness$accessible_color_matrix$ContrastRatio$humanFriendlyContrastRatio(ratio),
-									'.'))))));
-		});
-	var _toolness$accessible_color_matrix$Matrix$badContrastText = F3(
-		function (background, foreground, ratio) {
-			return A2(
-				_elm_lang$core$Basics_ops['++'],
-				'Do not use ',
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					foreground.name,
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						' text on ',
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							background.name,
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								' background; it is not 508-compliant, with a contrast ratio of ',
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									_toolness$accessible_color_matrix$ContrastRatio$humanFriendlyContrastRatio(ratio),
-									'.'))))));
-		});
-	var _toolness$accessible_color_matrix$Matrix$badContrastLegendText = '\n  Please don\'t use these color combinations; they do not meet a color\n  contrast ratio of 4.5:1, so they do not conform with the standards of\n  Section 508 for body text. This means that some people would have\n  difficulty reading the text. Employing accessibility best practices\n  improves the user experience for all users.\n';
-	var _toolness$accessible_color_matrix$Matrix$role = function (val) {
-		return A2(_elm_lang$html$Html_Attributes$attribute, 'role', val);
-	};
-	var _toolness$accessible_color_matrix$Matrix$ariaHidden = function (val) {
-		return A2(
-			_elm_lang$html$Html_Attributes$attribute,
-			'aria-hidden',
-			val ? 'true' : 'false');
-	};
-	var _toolness$accessible_color_matrix$Matrix$legend = A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('usa-matrix-legend'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _toolness$accessible_color_matrix$Symbols$badContrastSvg(''),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$p,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('usa-sr-invisible'),
-						_1: {
-							ctor: '::',
-							_0: _toolness$accessible_color_matrix$Matrix$ariaHidden(true),
-							_1: {ctor: '[]'}
-						}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(_toolness$accessible_color_matrix$Matrix$badContrastLegendText),
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			}
-		});
 	var _toolness$accessible_color_matrix$Matrix$matrixTableHeader = function (palette) {
 		var fgStyle = function (entry) {
 			return A2(
@@ -10053,7 +10121,7 @@
 								_0: _elm_lang$html$Html_Attributes$class('usa-sr-invisible'),
 								_1: {
 									ctor: '::',
-									_0: _toolness$accessible_color_matrix$Matrix$ariaHidden(true),
+									_0: _toolness$accessible_color_matrix$Accessibility$ariaHidden(true),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Attributes$style(
@@ -10097,6 +10165,50 @@
 				_1: {ctor: '[]'}
 			});
 	};
+	var _toolness$accessible_color_matrix$Matrix$goodContrastText = F3(
+		function (background, foreground, ratio) {
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				'The contrast ratio of ',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					foreground.name,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						' on ',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							background.name,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								' is ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_toolness$accessible_color_matrix$ContrastRatio$humanFriendlyContrastRatio(ratio),
+									'.'))))));
+		});
+	var _toolness$accessible_color_matrix$Matrix$badContrastText = F3(
+		function (background, foreground, ratio) {
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				'Do not use ',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					foreground.name,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						' text on ',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							background.name,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								' background; it is not 508-compliant, with a contrast ratio of ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_toolness$accessible_color_matrix$ContrastRatio$humanFriendlyContrastRatio(ratio),
+									'.'))))));
+		});
 	var _toolness$accessible_color_matrix$Matrix$matrixTableRow = function (palette) {
 		var rowComboCell = F2(
 			function (background, foreground) {
@@ -10125,7 +10237,7 @@
 											A3(_toolness$accessible_color_matrix$Matrix$goodContrastText, background, foreground, ratio)),
 										_1: {
 											ctor: '::',
-											_0: _toolness$accessible_color_matrix$Matrix$role('presentation'),
+											_0: _toolness$accessible_color_matrix$Accessibility$role('presentation'),
 											_1: {ctor: '[]'}
 										}
 									}
@@ -10140,7 +10252,7 @@
 										_0: _elm_lang$html$Html_Attributes$class('usa-sr-invisible'),
 										_1: {
 											ctor: '::',
-											_0: _toolness$accessible_color_matrix$Matrix$ariaHidden(true),
+											_0: _toolness$accessible_color_matrix$Accessibility$ariaHidden(true),
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$html$Html_Attributes$style(
@@ -10248,7 +10360,7 @@
 								_elm_lang$html$Html$div,
 								{
 									ctor: '::',
-									_0: _toolness$accessible_color_matrix$Matrix$role('presentation'),
+									_0: _toolness$accessible_color_matrix$Accessibility$role('presentation'),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Attributes$title(desc),
@@ -10395,6 +10507,38 @@
 				}
 			});
 	};
+	var _toolness$accessible_color_matrix$Matrix$badContrastLegendText = '\n  Please don\'t use these color combinations; they do not meet a color\n  contrast ratio of 4.5:1, so they do not conform with the standards of\n  Section 508 for body text. This means that some people would have\n  difficulty reading the text. Employing accessibility best practices\n  improves the user experience for all users.\n';
+	var _toolness$accessible_color_matrix$Matrix$legend = A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('usa-matrix-legend'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: _toolness$accessible_color_matrix$Symbols$badContrastSvg(''),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$p,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('usa-sr-invisible'),
+						_1: {
+							ctor: '::',
+							_0: _toolness$accessible_color_matrix$Accessibility$ariaHidden(true),
+							_1: {ctor: '[]'}
+						}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(_toolness$accessible_color_matrix$Matrix$badContrastLegendText),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		});
 	var _toolness$accessible_color_matrix$Matrix$matrixDiv = function (palette) {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -10444,17 +10588,6 @@
 			_elm_lang$core$List$length(palette),
 			0) ? _toolness$accessible_color_matrix$Palette$deserializePalette(_toolness$accessible_color_matrix$Main$defaultPalette) : _toolness$accessible_color_matrix$Palette$deserializePalette(palette);
 	};
-	var _toolness$accessible_color_matrix$Main$init = function (qsPalette) {
-		return {
-			ctor: '_Tuple2',
-			_0: {
-				palette: _toolness$accessible_color_matrix$Main$getPaletteOrDefault(qsPalette),
-				isEditing: false,
-				lastPalette: {ctor: '[]'}
-			},
-			_1: _elm_lang$core$Platform_Cmd$none
-		};
-	};
 	var _toolness$accessible_color_matrix$Main$updateQs = _elm_lang$core$Native_Platform.outgoingPort(
 		'updateQs',
 		function (v) {
@@ -10462,57 +10595,6 @@
 				function (v) {
 					return [v._0, v._1];
 				});
-		});
-	var _toolness$accessible_color_matrix$Main$update = F2(
-		function (message, model) {
-			var _p0 = message;
-			switch (_p0.ctor) {
-				case 'PaletteMessage':
-					var newPalette = A2(_toolness$accessible_color_matrix$Palette$updatePalette, _p0._0, model.palette);
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{palette: newPalette}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				case 'LoadPalette':
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								palette: _toolness$accessible_color_matrix$Main$getPaletteOrDefault(_p0._0),
-								isEditing: false
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				case 'StartEditing':
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{isEditing: true, lastPalette: model.palette}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				case 'FinishEditing':
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{isEditing: false}),
-						_1: _toolness$accessible_color_matrix$Main$updateQs(
-							_toolness$accessible_color_matrix$Palette$serializePalette(model.palette))
-					};
-				default:
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{isEditing: false, palette: model.lastPalette}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-			}
 		});
 	var _toolness$accessible_color_matrix$Main$qsUpdated = _elm_lang$core$Native_Platform.incomingPort(
 		'qsUpdated',
@@ -10529,6 +10611,96 @@
 						A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$string));
 				},
 				A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$string))));
+	var _toolness$accessible_color_matrix$Main$updateFavicon = _elm_lang$core$Native_Platform.outgoingPort(
+		'updateFavicon',
+		function (v) {
+			return _elm_lang$core$Native_List.toArray(v).map(
+				function (v) {
+					return v;
+				});
+		});
+	var _toolness$accessible_color_matrix$Main$updateFaviconFromPalette = function (palette) {
+		return _toolness$accessible_color_matrix$Main$updateFavicon(
+			A2(
+				_elm_lang$core$List$map,
+				_eskimoblood$elm_color_extra$Color_Convert$colorToHex,
+				A2(
+					_elm_lang$core$List$map,
+					function (_) {
+						return _.color;
+					},
+					palette)));
+	};
+	var _toolness$accessible_color_matrix$Main$update = F2(
+		function (message, model) {
+			var _p0 = message;
+			switch (_p0.ctor) {
+				case 'PaletteMessage':
+					var newPalette = A2(_toolness$accessible_color_matrix$Palette$updatePalette, _p0._0, model.palette);
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{palette: newPalette}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				case 'LoadPalette':
+					var newPalette = _toolness$accessible_color_matrix$Main$getPaletteOrDefault(_p0._0);
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{palette: newPalette, isEditing: false}),
+						_1: _toolness$accessible_color_matrix$Main$updateFaviconFromPalette(newPalette)
+					};
+				case 'StartEditing':
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{isEditing: true, lastPalette: model.palette}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				case 'FinishEditing':
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{isEditing: false}),
+						_1: _elm_lang$core$Platform_Cmd$batch(
+							{
+								ctor: '::',
+								_0: _toolness$accessible_color_matrix$Main$updateQs(
+									_toolness$accessible_color_matrix$Palette$serializePalette(model.palette)),
+								_1: {
+									ctor: '::',
+									_0: _toolness$accessible_color_matrix$Main$updateFaviconFromPalette(model.palette),
+									_1: {ctor: '[]'}
+								}
+							})
+					};
+				default:
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{isEditing: false, palette: model.lastPalette}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+			}
+		});
+	var _toolness$accessible_color_matrix$Main$init = function (qsPalette) {
+		var palette = _toolness$accessible_color_matrix$Main$getPaletteOrDefault(qsPalette);
+		return {
+			ctor: '_Tuple2',
+			_0: {
+				palette: palette,
+				isEditing: false,
+				lastPalette: {ctor: '[]'}
+			},
+			_1: _toolness$accessible_color_matrix$Main$updateFaviconFromPalette(palette)
+		};
+	};
 	var _toolness$accessible_color_matrix$Main$Model = F3(
 		function (a, b, c) {
 			return {palette: a, isEditing: b, lastPalette: c};
@@ -10638,7 +10810,7 @@
 						function (m) {
 							return _toolness$accessible_color_matrix$Main$PaletteMessage(m);
 						},
-						A2(_toolness$accessible_color_matrix$Palette$paletteDiv, model.palette, model.isEditing)),
+						A2(_toolness$accessible_color_matrix$Palette$paletteUl, model.palette, model.isEditing)),
 					_1: {
 						ctor: '::',
 						_0: _toolness$accessible_color_matrix$Main$actions(model),
@@ -10994,7 +11166,7 @@
 
 	  for (row = 0; row < squaresPerSide; row += 1) {
 	    for (col = 0; col < squaresPerSide; col += 1) {
-	      ctx.fillStyle = '#' + colors[colorIndex];
+	      ctx.fillStyle = colors[colorIndex];
 	      ctx.fillRect(
 	        col * squareWidth,
 	        row * squareWidth,
