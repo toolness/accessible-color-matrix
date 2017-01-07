@@ -1,24 +1,17 @@
 module Matrix exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (attribute, class, scope, style, title)
+import Html.Attributes exposing (class, scope, style, title)
 import Color exposing (white)
 
 import Symbols exposing (symbols, badContrastSvg)
+import Accessibility exposing (ariaHidden, role)
 import ContrastRatio exposing (
   contrastRatio, areColorsIndistinguishable, humanFriendlyContrastRatio
   )
 import Palette exposing (
   Palette, PaletteEntry, paletteEntryHex, squareBgStyle
   )
-
-ariaHidden : Bool -> Html.Attribute msg
-ariaHidden val =
-  attribute "aria-hidden" (if val then "true" else "false")
-
-role : String -> Html.Attribute msg
-role val =
-  attribute "role" val
 
 badContrastLegendText : String
 badContrastLegendText = """

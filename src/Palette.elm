@@ -11,6 +11,7 @@ import Color exposing (Color, white, red, black)
 import Color.Convert exposing (colorToHex, hexToColor)
 
 import ContrastRatio exposing (areColorsIndistinguishable, contrastRatio)
+import Accessibility exposing (ariaLabel)
 
 type alias PaletteEntry =
   { id: Int
@@ -113,10 +114,6 @@ squareBgStyle entry =
     if areColorsIndistinguishable entry.color white then
       [ ("box-shadow", "inset 0 0 0 1px #aeb0b5") ]
       else []
-
-ariaLabel : String -> Html.Attribute msg
-ariaLabel val =
-  attribute "aria-label" val
 
 paletteDiv : Palette -> Bool -> Html PaletteMsg
 paletteDiv palette isEditable =
