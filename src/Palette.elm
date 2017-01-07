@@ -4,13 +4,13 @@ import Json.Decode
 import Char exposing (isHexDigit)
 import Html exposing (div, p, text, input, label, button, Html)
 import Html.Attributes exposing (
-  class, classList, style, type_, value, id, for, attribute
+  class, classList, style, type_, value, id, for, attribute, title
   )
 import Html.Events exposing (onInput, onClick, on, targetValue)
-import Color exposing (Color, white, red)
+import Color exposing (Color, white, red, black)
 import Color.Convert exposing (colorToHex, hexToColor)
 
-import ContrastRatio exposing (areColorsIndistinguishable)
+import ContrastRatio exposing (areColorsIndistinguishable, contrastRatio)
 
 type alias PaletteEntry =
   { id: Int
@@ -98,6 +98,10 @@ squareBgStyle entry =
       [ ("box-shadow", "inset 0 0 0 1px #aeb0b5") ]
       else []
 
+ariaLabel : String -> Html.Attribute msg
+ariaLabel val =
+  attribute "aria-label" val
+
 paletteDiv : Palette -> Bool -> Html PaletteMsg
 paletteDiv palette isEditable =
   let
@@ -143,22 +147,33 @@ paletteDiv palette isEditable =
         actions : List (Html PaletteMsg)
         actions =
           if isEditable && (List.length palette > 1) then
-            [ button [ onClick (Remove entry.id)
-                     , class "usa-button-gray palette-action-remove"
-                     ]
-                [ text "Remove" ]
-            ]
+            let
+              labelText = "Remove color " ++ entry.name
+              isLight = contrastRatio entry.color black >
+                        contrastRatio entry.color white
+            in
+              [ button [ onClick (Remove entry.id)
+                       , classList [ ("usa-button-outline-inverse", True)
+                                   , ("palette-action-remove", True)
+                                   , ("palette-entry-is-light", isLight)
+                                   ]
+                       , ariaLabel labelText
+                       , title labelText
+                       ]
+                  [ text "×" ]
+              ]
           else []
       in
         div [ classList [ ("usa-color-square", True)
                         , ("usa-mobile-end-row", isOdd i)
                         ]
             , style (squareBgStyle entry) ]
-          [ div [ class "usa-color-inner-content" ]
-            ([ p [ class "usa-color-name" ] (entryName entry)
+          (actions ++
+           [ div [ class "usa-color-inner-content" ]
+             [ p [ class "usa-color-name" ] (entryName entry)
              , p [ class "usa-color-hex" ] (entryHex entry)
-             ] ++ actions)
-          ]
+             ]
+           ])
   in
     div [ classList [ ("usa-grid-full", True)
                     , ("usa-color-row", True)
