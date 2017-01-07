@@ -2,15 +2,15 @@ module Palette exposing (..)
 
 import Json.Decode
 import Char exposing (isHexDigit)
-import Html exposing (div, p, text, input, label, Html)
+import Html exposing (div, p, text, input, label, button, Html)
 import Html.Attributes exposing (
-  class, classList, style, type_, value, id, for, attribute
+  class, classList, style, type_, value, id, for, attribute, title
   )
-import Html.Events exposing (onInput, on, targetValue)
-import Color exposing (Color, white, red)
+import Html.Events exposing (onInput, onClick, on, targetValue)
+import Color exposing (Color, white, red, black)
 import Color.Convert exposing (colorToHex, hexToColor)
 
-import ContrastRatio exposing (areColorsIndistinguishable)
+import ContrastRatio exposing (areColorsIndistinguishable, contrastRatio)
 
 type alias PaletteEntry =
   { id: Int
@@ -23,7 +23,13 @@ type alias Palette = List PaletteEntry
 
 type alias SerializedPalette = List (String, String)
 
-type PaletteMsg = ChangeName Int String | ChangeColor Int String
+type PaletteMsg =
+  ChangeName Int String
+  | ChangeColor Int String
+  | Remove Int
+  | Add
+
+maxPaletteEntries = 6
 
 updatePalette : PaletteMsg -> Palette -> Palette
 updatePalette msg palette =
@@ -43,6 +49,20 @@ updatePalette msg palette =
         List.map
           (\e -> if e.id == id then (changeColor e) else e)
           palette
+    Remove id ->
+      List.filter (\e -> e.id /= id) palette
+    Add ->
+      let
+        newId : Int
+        newId = (List.foldl max 0 (List.map .id palette)) + 1
+
+        newColor : Color
+        newColor = red
+      in
+        palette ++ [ { id = newId
+                     , name = "Color " ++ (toString (newId + 1))
+                     , color = newColor
+                     , editableColor = colorToHex newColor } ]
 
 deserializePalette : SerializedPalette -> Palette
 deserializePalette items =
@@ -53,7 +73,8 @@ deserializePalette items =
       , color = safeHexToColor hex
       , editableColor = filterHex hex }
   in
-    List.indexedMap entry items
+    List.take maxPaletteEntries items
+      |> List.indexedMap entry
 
 serializePalette : Palette -> SerializedPalette
 serializePalette palette =
@@ -92,6 +113,10 @@ squareBgStyle entry =
     if areColorsIndistinguishable entry.color white then
       [ ("box-shadow", "inset 0 0 0 1px #aeb0b5") ]
       else []
+
+ariaLabel : String -> Html.Attribute msg
+ariaLabel val =
+  attribute "aria-label" val
 
 paletteDiv : Palette -> Bool -> Html PaletteMsg
 paletteDiv palette isEditable =
@@ -134,19 +159,52 @@ paletteDiv palette isEditable =
 
     square : Int -> PaletteEntry -> Html PaletteMsg
     square i entry =
-      div [ classList [ ("usa-color-square", True)
-                      , ("usa-mobile-end-row", isOdd i)
-                      ]
-          , style (squareBgStyle entry) ]
-        [ div [ class "usa-color-inner-content" ]
-          [ p [ class "usa-color-name" ] (entryName entry)
-          , p [ class "usa-color-hex" ] (entryHex entry)
-          ]
+      let
+        removeActions : List (Html PaletteMsg)
+        removeActions =
+          if isEditable && (List.length palette > 1) then
+            let
+              labelText = "Remove color " ++ entry.name
+              isLight = contrastRatio entry.color black >
+                        contrastRatio entry.color white
+            in
+              [ button [ onClick (Remove entry.id)
+                       , classList [ ("usa-button-outline-inverse", True)
+                                   , ("palette-action-remove", True)
+                                   , ("palette-entry-is-light", isLight)
+                                   ]
+                       , ariaLabel labelText
+                       , title labelText
+                       ]
+                  [ text "×" ]
+              ]
+          else []
+      in
+        div [ classList [ ("usa-color-square", True)
+                        , ("usa-mobile-end-row", isOdd i)
+                        ]
+            , style (squareBgStyle entry) ]
+          (removeActions ++
+           [ div [ class "usa-color-inner-content" ]
+             [ p [ class "usa-color-name" ] (entryName entry)
+             , p [ class "usa-color-hex" ] (entryHex entry)
+             ]
+           ])
+
+    addActions : List (Html PaletteMsg)
+    addActions =
+      if isEditable && List.length palette < maxPaletteEntries then
+        [ div [ class "usa-color-square palette-action-add-wrapper" ]
+            [ button [ class "usa-button-outline"
+                     , ariaLabel "Add a new color"
+                     , title "Add a new color"
+                     , onClick Add ] [ text "+" ] ]
         ]
+      else []
   in
     div [ classList [ ("usa-grid-full", True)
                     , ("usa-color-row", True)
                     , ("usa-primary-color-section", True)
                     , ("palette-is-editable", isEditable)
                     ] ]
-      (List.indexedMap square palette)
+      ((List.indexedMap square palette) ++ addActions)
