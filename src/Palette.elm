@@ -2,11 +2,11 @@ module Palette exposing (..)
 
 import Json.Decode
 import Char exposing (isHexDigit)
-import Html exposing (div, p, text, input, label, Html)
+import Html exposing (div, p, text, input, label, button, Html)
 import Html.Attributes exposing (
   class, classList, style, type_, value, id, for, attribute
   )
-import Html.Events exposing (onInput, on, targetValue)
+import Html.Events exposing (onInput, onClick, on, targetValue)
 import Color exposing (Color, white, red)
 import Color.Convert exposing (colorToHex, hexToColor)
 
@@ -23,7 +23,10 @@ type alias Palette = List PaletteEntry
 
 type alias SerializedPalette = List (String, String)
 
-type PaletteMsg = ChangeName Int String | ChangeColor Int String
+type PaletteMsg =
+  ChangeName Int String
+  | ChangeColor Int String
+  | Remove Int
 
 updatePalette : PaletteMsg -> Palette -> Palette
 updatePalette msg palette =
@@ -43,6 +46,8 @@ updatePalette msg palette =
         List.map
           (\e -> if e.id == id then (changeColor e) else e)
           palette
+    Remove id ->
+      List.filter (\e -> e.id /= id) palette
 
 deserializePalette : SerializedPalette -> Palette
 deserializePalette items =
@@ -134,15 +139,26 @@ paletteDiv palette isEditable =
 
     square : Int -> PaletteEntry -> Html PaletteMsg
     square i entry =
-      div [ classList [ ("usa-color-square", True)
-                      , ("usa-mobile-end-row", isOdd i)
-                      ]
-          , style (squareBgStyle entry) ]
-        [ div [ class "usa-color-inner-content" ]
-          [ p [ class "usa-color-name" ] (entryName entry)
-          , p [ class "usa-color-hex" ] (entryHex entry)
+      let
+        actions : List (Html PaletteMsg)
+        actions =
+          if isEditable && (List.length palette > 1) then
+            [ button [ onClick (Remove entry.id)
+                     , class "usa-button-gray palette-action-remove"
+                     ]
+                [ text "Remove" ]
+            ]
+          else []
+      in
+        div [ classList [ ("usa-color-square", True)
+                        , ("usa-mobile-end-row", isOdd i)
+                        ]
+            , style (squareBgStyle entry) ]
+          [ div [ class "usa-color-inner-content" ]
+            ([ p [ class "usa-color-name" ] (entryName entry)
+             , p [ class "usa-color-hex" ] (entryHex entry)
+             ] ++ actions)
           ]
-        ]
   in
     div [ classList [ ("usa-grid-full", True)
                     , ("usa-color-row", True)
