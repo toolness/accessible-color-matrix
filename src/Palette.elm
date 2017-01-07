@@ -63,7 +63,7 @@ updatePalette msg palette =
         palette ++ [ { id = newId
                      , name = "Color " ++ (toString (newId + 1))
                      , color = newColor
-                     , editableColor = colorToHex newColor } ]
+                     , editableColor = filterHex (colorToHex newColor) } ]
 
 deserializePalette : SerializedPalette -> Palette
 deserializePalette items =
@@ -93,10 +93,10 @@ arePaletteEditsValid palette =
 
 filterHex : String -> String
 filterHex str =
-  String.left 6 str
-    |> String.toUpper
+  String.toUpper str
     |> String.trim
     |> String.filter isHexDigit
+    |> String.left 6
 
 safeHexToColor : String -> Color
 safeHexToColor hex =
