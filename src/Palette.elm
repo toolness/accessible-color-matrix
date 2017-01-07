@@ -2,7 +2,7 @@ module Palette exposing (..)
 
 import Json.Decode
 import Char exposing (isHexDigit)
-import Html exposing (div, p, text, input, label, button, Html)
+import Html exposing (div, p, text, input, label, button, ul, li, Html)
 import Html.Attributes exposing (
   class, classList, style, type_, value, id, for, attribute, title
   )
@@ -115,8 +115,8 @@ squareBgStyle entry =
       [ ("box-shadow", "inset 0 0 0 1px #aeb0b5") ]
       else []
 
-paletteDiv : Palette -> Bool -> Html PaletteMsg
-paletteDiv palette isEditable =
+paletteUl : Palette -> Bool -> Html PaletteMsg
+paletteUl palette isEditable =
   let
     makeUniqueId : String -> PaletteEntry -> String
     makeUniqueId prefix entry = prefix ++ "_" ++ (toString entry.id)
@@ -177,7 +177,7 @@ paletteDiv palette isEditable =
               ]
           else []
       in
-        div [ classList [ ("usa-color-square", True)
+        li [ classList [ ("usa-color-square", True)
                         , ("usa-mobile-end-row", isOdd i)
                         ]
             , style (squareBgStyle entry) ]
@@ -191,7 +191,7 @@ paletteDiv palette isEditable =
     addActions : List (Html PaletteMsg)
     addActions =
       if isEditable && List.length palette < maxPaletteEntries then
-        [ div [ class "usa-color-square palette-action-add-wrapper" ]
+        [ li [ class "usa-color-square palette-action-add-wrapper" ]
             [ button [ class "usa-button-outline"
                      , ariaLabel "Add a new color"
                      , title "Add a new color"
@@ -199,7 +199,7 @@ paletteDiv palette isEditable =
         ]
       else []
   in
-    div [ classList [ ("usa-grid-full", True)
+    ul [ classList [ ("usa-grid-full", True)
                     , ("usa-color-row", True)
                     , ("usa-primary-color-section", True)
                     , ("palette-is-editable", isEditable)

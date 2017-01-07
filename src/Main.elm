@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Color.Convert exposing (colorToHex)
 
 import Palette exposing (
-  Palette, PaletteMsg, SerializedPalette, paletteDiv,
+  Palette, PaletteMsg, SerializedPalette, paletteUl,
   updatePalette, deserializePalette, serializePalette,
   arePaletteEditsValid
   )
@@ -68,7 +68,7 @@ view model =
   div []
     [ h1 [] [ text "Accessible color palette builder" ]
     , Html.map (\m -> PaletteMessage m)
-      (paletteDiv model.palette model.isEditing)
+      (paletteUl model.palette model.isEditing)
     , actions model
     , h2 [] [ text "Accessible color combinations" ]
     , matrixDiv model.palette
