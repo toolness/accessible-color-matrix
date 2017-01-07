@@ -28,13 +28,32 @@ main {
 }
 
 .usa-primary-color-section.palette-is-editable .usa-color-square {
-  margin-bottom: 16rem;
+  margin-bottom: 12rem;
 }
 
-.palette-action-remove {
-  width: 100%;
-  margin-top: 0;
-  font-size: 1rem;
+button.palette-action-remove.palette-entry-is-light {
+  /* Use USWDS "gray-dark" if we're displaying the button on
+   * a light background. */
+  color: #323a45;
+  box-shadow: inset 0 0 0 2px #323a45;
+}
+
+button.palette-action-remove.palette-entry-is-light:focus {
+  box-shadow: inset 0 0 0 2px #aeb0b5;
+}
+
+button.palette-action-remove.palette-entry-is-light:hover {
+  color: #aeb0b5;
+  box-shadow: inset 0 0 0 2px #aeb0b5;
+}
+
+button.palette-action-remove {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.5rem;
+  margin: 0;
+  line-height: 0.75;
 }
 </style>
 <title>Accessible color palette builder</title>
