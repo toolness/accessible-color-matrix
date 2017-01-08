@@ -59,8 +59,15 @@ button.palette-action-remove.palette-entry-is-light:hover {
   box-shadow: inset 0 0 0 2px #aeb0b5;
 }
 
-button.palette-action-remove {
+button.palette-action-remove, .palette-action-add-wrapper button {
   position: absolute;
+
+  /* For some reason this is needed for Mobile Safari to not
+   * make the buttons ridiculously wide. */
+  width: auto;
+}
+
+button.palette-action-remove {
   top: 0.5rem;
   right: 0.5rem;
   padding: 0.5rem;
@@ -73,7 +80,6 @@ button.palette-action-remove {
 }
 
 .palette-action-add-wrapper button {
-  position: absolute;
   top: calc(50% - 2.5rem);
   left: calc(50% - 1.5rem);
   padding: 1rem;
