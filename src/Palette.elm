@@ -30,8 +30,6 @@ type PaletteMsg =
   | Remove Int
   | Add
 
-maxPaletteEntries = 6
-
 updatePalette : PaletteMsg -> Palette -> Palette
 updatePalette msg palette =
   case msg of
@@ -74,7 +72,7 @@ deserializePalette items =
       , color = safeHexToColor hex
       , editableColor = filterHex hex }
   in
-    List.take maxPaletteEntries items
+    items
       |> List.indexedMap entry
 
 serializePalette : Palette -> SerializedPalette
@@ -190,7 +188,7 @@ paletteUl palette isEditable =
 
     addActions : List (Html PaletteMsg)
     addActions =
-      if isEditable && List.length palette < maxPaletteEntries then
+      if isEditable then
         [ li [ class "usa-color-square palette-action-add-wrapper" ]
             [ button [ class "usa-button-outline"
                      , ariaLabel "Add a new color"
