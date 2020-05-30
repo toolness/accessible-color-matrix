@@ -18,6 +18,7 @@ type Message =
   | StartEditing
   | FinishEditing
   | CancelEditing
+  | ResetEditing
 
 type alias Model =
   { palette: Palette
@@ -44,9 +45,11 @@ defaultPalette =
 actions : Model -> Html Message
 actions model =
   let
-    edit =
-      [ button [ onClick StartEditing ] [ text "Edit palette" ] ]
-
+    editOrReset = 
+      [ button 
+        [ onClick StartEditing ] [ text "Edit palette" ]
+        , button [ onClick ResetEditing ] [ text "Reset palette"] 
+      ]
     -- TODO: If enter/esc is pressed in a field while editing, it
     -- should have the same effect as pressing the save/cancel buttons.
     -- Well, at least enter should, since it's easily undoable.
@@ -61,7 +64,7 @@ actions model =
       ]
   in
     div [ class "usa-grid-full usa-color-row" ]
-      (if model.isEditing then saveOrCancel else edit)
+      (if model.isEditing then saveOrCancel else editOrReset)
 
 view : Model -> Html Message
 view model =
@@ -106,7 +109,13 @@ update message model =
                   , updateFaviconFromPalette model.palette ])
     CancelEditing ->
       ({model | isEditing = False
-              , palette = model.lastPalette}, Cmd.none)
+              , palette = model.lastPalette}, Cmd.none) 
+    ResetEditing ->
+      ({model | isEditing = False,
+          palette = (deserializePalette defaultPalette)
+        },
+        Cmd.batch [ updateQs (defaultPalette)
+                  , updateFaviconFromPalette (deserializePalette defaultPalette) ])
 
 getPaletteOrDefault : SerializedPalette -> Palette
 getPaletteOrDefault palette =

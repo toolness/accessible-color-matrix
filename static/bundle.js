@@ -10755,22 +10755,41 @@
 				_1: {ctor: '[]'}
 			}
 		};
-		var edit = {
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$button,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onClick(_toolness$accessible_color_matrix$Main$StartEditing),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('Edit palette'),
-					_1: {ctor: '[]'}
-				}),
-			_1: {ctor: '[]'}
-		};
+		var editOrReset = {
+			ctor = '::',
+			_0: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$button,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(_toolness$accessible_color_matrix$Main$StartEditing),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Edit palette'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$button,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(_toolness$accessible_color_matrix$Main$ResetEditing),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Reset palette'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		};	
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -10778,7 +10797,7 @@
 				_0: _elm_lang$html$Html_Attributes$class('usa-grid-full usa-color-row'),
 				_1: {ctor: '[]'}
 			},
-			model.isEditing ? saveOrCancel : edit);
+			model.isEditing ? saveOrCancel : editOrReset);
 	};
 	var _toolness$accessible_color_matrix$Main$LoadPalette = function (a) {
 		return {ctor: 'LoadPalette', _0: a};
