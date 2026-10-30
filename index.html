@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessible Color Matrix</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Classic deferred scripts (not modules) so the app also runs from file:// -->
+    <script src="js/contrast.js" defer></script>
+    <script src="js/app.js" defer></script>
+</head>
+
+<body>
+    <main>
+        <h1>Accessible Color Matrix</h1>
+        <noscript>
+            <p>This tool needs JavaScript to calculate contrast ratios.</p>
+        </noscript>
+        <h2 id="palette-heading">Color palette</h2>
+        <ul id="palette" class="palette" aria-labelledby="palette-heading"></ul>
+        <div id="actions" class="actions"></div>
+        <p id="status" class="visually-hidden" role="status"></p>
+        <h2>Contrast matrix</h2>
+        <fieldset id="ratio-filter" class="filters">
+            <legend>Show combinations that reach</legend>
+            <label><input type="radio" name="min-ratio" value="0"> Any ratio (show all)</label>
+            <label><input type="radio" name="min-ratio" value="3"> 3:1, AA large text</label>
+            <label><input type="radio" name="min-ratio" value="4.5" checked> 4.5:1, AA normal text</label>
+            <label><input type="radio" name="min-ratio" value="7"> 7:1, AAA normal text</label>
+        </fieldset>
+        <p id="matrix-note" class="note" role="status"></p>
+        <div id="matrix" class="matrix"></div>
+        <h2>How to read the matrix</h2>
+        <div class="panel">
+            <p>
+                Each row is a background color and each column a foreground (text) color, both sorted
+                dark to light. A cell shows an “Aa” sample of the pair, its contrast ratio, and a badge
+                for each WCAG requirement:
+            </p>
+            <dl class="key">
+                <dt>AA-N</dt>
+                <dd>Normal text, 4.5:1 (WCAG AA)</dd>
+                <dt>AA-L</dt>
+                <dd>Large text, 3:1 (WCAG AA)</dd>
+                <dt>AAA-N</dt>
+                <dd>Normal text, 7:1 (WCAG AAA)</dd>
+                <dt>AAA-L</dt>
+                <dd>Large text, 4.5:1 (WCAG AAA)</dd>
+                <dt><span class="badge pass">✓ Pass</span></dt>
+                <dd>Meets that requirement</dd>
+                <dt><span class="badge fail">✗ Fail</span></dt>
+                <dd>Does not meet that requirement</dd>
+            </dl>
+            <p>
+                Pairs below the ratio chosen above are left empty. A color that reaches it with no
+                other color is removed from the matrix and listed above it. When there isn’t room
+                for every column, the matrix becomes a list grouped by background color that shows
+                only the pairs that reach the chosen ratio.
+            </p>
+            <p>
+                Large text means at least 24 CSS pixels at regular weight, or about 18.7 CSS pixels
+                bold. Ratios use the WCAG 2 relative luminance formula and are truncated, never rounded
+                up, so a figure shown as 4.49:1 really does fail 4.5:1.
+            </p>
+        </div>
+        <footer>
+            <p>
+                A vanilla JavaScript fork of
+                <a href="https://github.com/toolness/accessible-color-matrix">toolness/accessible-color-matrix</a>.
+            </p>
+            <p><a href="https://www.w3.org/TR/WCAG22/#contrast-minimum">WCAG 2.2 contrast requirements</a></p>
+        </footer>
+    </main>
+</body>
+
+</html>
