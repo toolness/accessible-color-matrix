@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessible Color Matrix</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Classic deferred scripts (not modules) so the app also runs from file:// -->
+    <script src="js/contrast.js" defer></script>
+    <script src="js/app.js" defer></script>
+</head>
+
+<body>
+    <main>
+        <h1>Accessible Color Matrix</h1>
+        <noscript>
+            <p>This tool needs JavaScript to calculate contrast ratios.</p>
+        </noscript>
+        <h2 id="palette-heading">Color palette</h2>
+        <ul id="palette" class="palette" aria-labelledby="palette-heading"></ul>
+        <div id="actions" class="actions"></div>
+        <p id="status" class="visually-hidden" role="status"></p>
+        <h2>Contrast matrix</h2>
+        <fieldset id="text-settings" class="text-settings">
+            <legend>Text to check (optional)</legend>
+            <div class="fields">
+                <div class="field">
+                    <label for="font-size">Font size in px</label>
+                    <input id="font-size" type="number" min="1" step="any" inputmode="decimal" aria-describedby="text-summary">
+                </div>
+                <div class="field">
+                    <label for="font-weight">Font weight</label>
+                    <select id="font-weight" aria-describedby="text-summary">
+                        <option value="100">100 Thin</option>
+                        <option value="200">200 Extra Light</option>
+                        <option value="300">300 Light</option>
+                        <option value="400" selected>400 Regular</option>
+                        <option value="500">500 Medium</option>
+                        <option value="600">600 Semibold</option>
+                        <option value="700">700 Bold</option>
+                        <option value="800">800 Extra Bold</option>
+                        <option value="900">900 Black</option>
+                    </select>
+                </div>
+                <div class="field field-wide">
+                    <label for="font-family">Font family</label>
+                    <input id="font-family" autocomplete="off" spellcheck="false" aria-describedby="family-hint">
+                    <p id="family-hint" class="hint">Has to be in CSS font-family format, e.g.: "Georgia, serif". This setting doesn't change WCAG 2 calculations, it's just for previewing purposes.</p>
+                </div>
+            </div>
+            <p id="text-summary" class="summary"></p>
+        </fieldset>
+        <fieldset id="ratio-filter" class="filters">
+            <legend>Show combinations that meet</legend>
+            <div id="filter-options"></div>
+        </fieldset>
+        <p id="matrix-note" class="note" role="status"></p>
+        <div id="matrix" class="matrix"></div>
+        <h2>How to read the matrix</h2>
+        <div class="panel">
+            <p>
+                Each row is a background color and each column a foreground (text) color, both sorted
+                dark to light. A cell shows an “Aa” sample of the pair, its contrast ratio, and a badge
+                for each WCAG requirement:
+            </p>
+            <dl class="key">
+                <dt>AA-N</dt>
+                <dd>Normal text, 4.5:1 (WCAG AA)</dd>
+                <dt>AA-L</dt>
+                <dd>Large text, 3:1 (WCAG AA)</dd>
+                <dt>AAA-N</dt>
+                <dd>Normal text, 7:1 (WCAG AAA)</dd>
+                <dt>AAA-L</dt>
+                <dd>Large text, 4.5:1 (WCAG AAA)</dd>
+                <dt>AA, AAA</dt>
+                <dd>With a font size entered, only the two requirements that apply to that text</dd>
+                <dt><span class="badge pass">✓ Pass</span></dt>
+                <dd>Meets that requirement</dd>
+                <dt><span class="badge fail">✗ Fail</span></dt>
+                <dd>Does not meet that requirement</dd>
+            </dl>
+            <p>
+                Pairs below the ratio chosen above are left empty. A color that reaches it with no
+                other color is removed from the matrix and listed above it. When there isn’t room
+                for every column, the matrix becomes a list grouped by background color that shows
+                only the pairs that reach the chosen ratio.
+            </p>
+            <p>
+                Large text means at least 24 CSS pixels (18pt), or 18.66 CSS pixels (14pt) at weight
+                700 or heavier. WCAG doesn’t define bold as a number, so this tool uses 700, the value
+                of CSS <code>bold</code>. The “Aa” samples use your size, weight and font family, up to
+                48px so they fit. Ratios use the WCAG 2 relative luminance formula and are truncated, never rounded
+                up, so a figure shown as 4.49:1 really does fail 4.5:1.
+            </p>
+        </div>
+        <footer>
+            <p>
+                A vanilla JavaScript fork of
+                <a href="https://github.com/toolness/accessible-color-matrix">toolness/accessible-color-matrix</a>.
+            </p>
+            <p><a href="https://www.w3.org/TR/WCAG22/#contrast-minimum">WCAG 2.2 contrast requirements</a></p>
+        </footer>
+    </main>
+</body>
+
+</html>
