@@ -6,9 +6,10 @@ A tool for checking every foreground and background pairing in a color palette a
 
 - **Edit the palette.** Choose **Edit palette** to rename colors, change their hex values, add colors or remove them. Changes are applied when you choose **Save changes**; **Cancel** restores the palette as it was.
 - **Share a palette.** Saving writes the palette into the page URL (for example `?n=white&v=ffffff&n=black&v=000000`). Copy the URL to share or bookmark it. The browser's back button steps through earlier saved versions.
-- **Filter the results.** Pick the minimum ratio to show: any ratio, 3:1, 4.5:1 or 7:1. Pairs below it are left empty. A color that reaches that ratio with no other color is removed from the matrix and named in a note above it.
+- **Check your text.** Enter the font size (in CSS pixels) and weight of the text you're checking. The tool works out whether WCAG counts it as normal or large text, explains why, and each pair then shows only the two requirements that apply: AA and AAA. Leave the size empty to see all four requirements. The optional font family changes only how the “Aa” samples look, because WCAG 2 contrast doesn't depend on typeface.
+- **Filter the results.** Pick the requirement to show. With a font size entered, the choices are AA or AAA *for that text*, so AA means 3:1 for large text and 4.5:1 for normal text. Without one, pick 3:1, 4.5:1 or 7:1. Pairs below it are left empty. A color that reaches it with no other color is removed from the matrix and named in a note above it.
 
-Each pair shows an “Aa” sample, its contrast ratio and a pass or fail badge for each requirement:
+Each pair shows an “Aa” sample, its contrast ratio and a pass or fail badge for each requirement. With no font size entered, those are:
 
 | Badge | Requirement | Minimum ratio |
 | ----- | ----------- | ------------- |
@@ -17,7 +18,9 @@ Each pair shows an “Aa” sample, its contrast ratio and a pass or fail badge 
 | AAA-N | AAA, normal text | 7:1   |
 | AAA-L | AAA, large text  | 4.5:1 |
 
-Large text is at least 24 CSS pixels at regular weight, or about 18.7 CSS pixels bold.
+With a font size entered, the badges become AA and AAA, using the normal or large text thresholds as appropriate.
+
+Large text is at least 24 CSS pixels (18pt), or 18.66 CSS pixels (14pt) bold. WCAG doesn't define bold as a number, so the tool counts weight 700 (the value of CSS `bold`) and above.
 
 ## How contrast is calculated
 
@@ -35,7 +38,7 @@ The tool aims to meet WCAG 2.2 AA itself:
 
 - Every control is a native HTML element with a visible label, usable by keyboard alone.
 - Focus moves somewhere sensible after adding, removing, saving or cancelling, and a status message announces the change.
-- Invalid hex values are flagged with a visible error linked to the field, and saving moves focus to the first one.
+- Invalid hex values are flagged with a visible error linked to the field, and saving moves focus to the first one. An invalid font size is marked invalid, and the explanation linked to the field says what to enter.
 - Each pair is announced to screen readers as one sentence, for example “bright on black: 11.36 to 1. AA normal text pass, …”, and the visual layout is hidden from them.
 - All text and control borders meet the minimum contrast ratios, and the focus ring is two-toned so it shows against any swatch.
 - Swatches keep their colors in Windows high contrast (forced colors) mode, since the color is the content.

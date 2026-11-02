@@ -1,7 +1,17 @@
 "use strict";
 
 (() => {
-    const { STANDARDS, parseHex, luminance, ratio, formatRatio, readableText } = window.Contrast;
+    const {
+        LEVELS,
+        LARGE_TEXT,
+        textCategory,
+        requirements,
+        parseHex,
+        luminance,
+        ratio,
+        formatRatio,
+        readableText
+    } = window.Contrast;
 
     const DEFAULT_PALETTE = [
         ["white", "FFFFFF"],
@@ -130,7 +140,7 @@
 
         nameInput.addEventListener("input", () => {
             color.name = nameInput.value;
-            remove ?.setAttribute("aria-label", "Remove " + label(color));
+            remove?.setAttribute("aria-label", "Remove " + label(color));
             renderMatrix();
         });
 
@@ -221,6 +231,89 @@
         announce("Changes discarded.");
     }
 
+    const MAX_SAMPLE_PX = 48;
+    let filterKey = "aa";
+    let filterCategory;
+
+    function textSettings() {
+        const input = $("font-size");
+        const raw = input.value.trim();
+        const px = Number(raw);
+        const valid = raw !== "" && Number.isFinite(px) && px > 0;
+        const weight = Number($("font-weight").value);
+        return {
+            px: valid ? px : null,
+            invalid: !valid && (raw !== "" || input.validity.badInput),
+            weight,
+            family: $("font-family").value.trim(),
+            category: valid ? textCategory(px, weight) : null
+        };
+    }
+
+    const trim = n => String(+n.toFixed(2));
+
+    function describeText(text) {
+        if (text.invalid) {
+            return "Enter a font size above 0, or leave it empty to see every requirement.";
+        }
+        if (!text.category) {
+            return "No size entered, so every pair shows all four requirements. " +
+                "Enter the size of your text to see only the ones that apply.";
+        }
+        const { aa, aaa } = LEVELS[text.category];
+        const bold = text.weight >= LARGE_TEXT.boldWeight;
+        const parts = [`${trim(text.px)}px (${trim(text.px * 0.75)}pt) at weight ${text.weight} is ` +
+            `${text.category} text, so AA needs ${aa}:1 and AAA needs ${aaa}:1.`
+        ];
+
+        if (text.category === "normal") {
+            parts.push(bold ?
+                `Bold text counts as large from ${LARGE_TEXT.boldPx}px.` :
+                `It would count as large text at ${LARGE_TEXT.px}px, or at ${LARGE_TEXT.boldPx}px ` +
+                `with weight ${LARGE_TEXT.boldWeight} or more.`);
+        }
+        if (text.category === "normal" && text.weight >= 500 && !bold && text.px >= LARGE_TEXT.boldPx) {
+            parts.push(`WCAG doesn’t give a number for bold, so weights below ${LARGE_TEXT.boldWeight} ` +
+                "count as regular here.");
+        }
+        if (text.weight <= 300) {
+            parts.push("Thin strokes are harder to read at low contrast, so aim above the minimum.");
+        }
+        return parts.join(" ");
+    }
+
+    // With a known size, "AA" and "AAA" mean that text's thresholds. Without one,
+    // the four fixed ratios are offered. The keys line up so a choice carries over.
+    function filterOptions(category) {
+        const options = [{ key: "any", ratio: 0, text: "Any ratio (show all)" }];
+        if (category) {
+            const { aa, aaa } = LEVELS[category];
+            options.push({ key: "aa", ratio: aa, text: `AA for this text (${aa}:1)` }, { key: "aaa", ratio: aaa, text: `AAA for this text (${aaa}:1)` });
+        } else {
+            options.push({ key: "aa-large", ratio: LEVELS.large.aa, text: `AA large text (${LEVELS.large.aa}:1)` }, { key: "aa", ratio: LEVELS.normal.aa, text: `AA normal text (${LEVELS.normal.aa}:1)` }, { key: "aaa", ratio: LEVELS.normal.aaa, text: `AAA normal text (${LEVELS.normal.aaa}:1)` });
+        }
+        return options;
+    }
+
+    function renderFilter(category) {
+        const options = filterOptions(category);
+        if (!options.some(o => o.key === filterKey)) filterKey = "aa";
+        $("filter-options").replaceChildren(...options.map(o =>
+            el("label", {},
+                el("input", { type: "radio", name: "min-ratio", value: o.key, checked: o.key === filterKey }),
+                " " + o.text)));
+        filterCategory = category;
+    }
+
+    function updateTextControls(text) {
+        const size = $("font-size");
+        if (text.invalid) size.setAttribute("aria-invalid", "true");
+        else size.removeAttribute("aria-invalid");
+        $("text-summary").textContent = describeText(text);
+        // Rebuild the radios only when the category changes, not on every keystroke.
+        if (text.category !== filterCategory) renderFilter(text.category);
+    }
+
     // Narrowest readable column. Below this the matrix becomes a list instead of
     // scrolling. In rem, so zooming text also triggers the switch (WCAG 1.4.10).
     const MIN_COLUMN_REM = 5;
@@ -236,13 +329,16 @@
         return el("th", { scope }, chip(color), el("span", { className: "header-name", textContent: label(color) }));
     }
 
-    function pairContent(fg, bg, value, showName) {
+    function pairContent(fg, bg, value, showName, text) {
         const shown = formatRatio(value);
-        const results = STANDARDS.map(s => ({ ...s, pass: value >= s.ratio }));
+        const results = requirements(text.category).map(s => ({ ...s, pass: value >= s.ratio }));
 
         const sample = el("span", { className: "sample", textContent: "Aa" });
         sample.style.color = "#" + fg.hex;
         sample.style.backgroundColor = "#" + bg.hex;
+        sample.style.fontWeight = text.weight;
+        sample.style.fontFamily = text.family;
+        if (text.px) sample.style.fontSize = Math.min(text.px, MAX_SAMPLE_PX) + "px";
 
         const spoken = el("span", {
             className: "visually-hidden",
@@ -264,7 +360,7 @@
         return [spoken, visual];
     }
 
-    function buildTable(colors, minRatio) {
+    function buildTable(colors, minRatio, text) {
         const corner = el("td", { className: "corner" },
             el("span", {}, "Foreground\u00a0→", el("br"), "Background\u00a0↓"));
         corner.firstChild.setAttribute("aria-hidden", "true");
@@ -272,21 +368,22 @@
         const cell = (fg, bg) => {
             const value = ratio(fg.hex, bg.hex);
             // Filtered out: the cell must stay so the columns line up, but it stays empty.
-            return value < minRatio ? el("td") : el("td", {}, ...pairContent(fg, bg, value, false));
+            return value < minRatio ? el("td") : el("td", {}, ...pairContent(fg, bg, value, false, text));
         };
 
         return el("table", {},
             el("caption", {
                 className: "visually-hidden",
                 textContent: "Rows are background colors, columns are foreground (text) colors, " +
-                    "both sorted dark to light. Empty cells are below the chosen ratio."
+                    "both sorted dark to light. Empty cells are below the chosen ratio." +
+                    (text.category ? ` Results are for ${trim(text.px)}px ${text.category} text.` : "")
             }),
             el("thead", {}, el("tr", {}, corner, ...colors.map(c => colorHeader(c, "col")))),
             el("tbody", {}, ...colors.map(bg =>
                 el("tr", {}, colorHeader(bg, "row"), ...colors.map(fg => cell(fg, bg))))));
     }
 
-    function buildList(colors, minRatio) {
+    function buildList(colors, minRatio, text) {
         return el("div", { className: "pair-list" }, ...colors.flatMap(bg => {
             const pairs = colors
                 .map(fg => [fg, ratio(fg.hex, bg.hex)])
@@ -294,7 +391,7 @@
             return [
                 el("h3", {}, el("span", { textContent: "On " + label(bg) }), chip(bg)),
                 el("ul", { className: "pairs" }, ...pairs.map(([fg, value]) =>
-                    el("li", {}, ...pairContent(fg, bg, value, true))))
+                    el("li", {}, ...pairContent(fg, bg, value, true, text))))
             ];
         }));
     }
@@ -315,10 +412,11 @@
     }
 
     function minRatio() {
-        return Number(document.querySelector('input[name="min-ratio"]:checked') ?.value ?? 0);
+        return filterOptions(filterCategory).find(o => o.key === filterKey)?.ratio ?? 0;
     }
 
     function renderMatrix() {
+        const text = textSettings();
         const min = minRatio();
         const colors = visibleColors(min);
         const removed = palette.filter(c => !colors.includes(c)).map(label);
@@ -336,7 +434,7 @@
         if (!colors.length) return;
 
         layout = fitsAsTable(colors.length + 1) ? "table" : "list";
-        matrix.replaceChildren(layout === "table" ? buildTable(colors, min) : buildList(colors, min));
+        matrix.replaceChildren(layout === "table" ? buildTable(colors, min, text) : buildList(colors, min, text));
     }
 
     new ResizeObserver(() => {
@@ -352,7 +450,15 @@
         renderMatrix();
     }
 
-    $("ratio-filter").addEventListener("change", renderMatrix);
+    $("ratio-filter").addEventListener("change", event => {
+        filterKey = event.target.value;
+        renderMatrix();
+    });
+
+    $("text-settings").addEventListener("input", () => {
+        updateTextControls(textSettings());
+        renderMatrix();
+    });
 
     window.addEventListener("popstate", () => {
         palette = loadPalette();
@@ -360,5 +466,6 @@
         render();
     });
 
+    updateTextControls(textSettings());
     render();
 })();

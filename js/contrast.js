@@ -6,12 +6,35 @@
 "use strict";
 
 window.Contrast = (() => {
+    const LEVELS = {
+        normal: { aa: 4.5, aaa: 7 },
+        large: { aa: 3, aaa: 4.5 }
+    };
+
+    // WCAG large text is 18pt, or 14pt bold. 14pt is 18.666…px, but 18.66px is
+    // the figure people usually enter, so it counts. WCAG gives no number for
+    // "bold"; 700 is the CSS keyword's value.
+    const LARGE_TEXT = { px: 24, boldPx: 18.66, boldWeight: 700 };
+
     const STANDARDS = [
-        { label: "AA-N", name: "AA normal text", ratio: 4.5 },
-        { label: "AA-L", name: "AA large text", ratio: 3 },
-        { label: "AAA-N", name: "AAA normal text", ratio: 7 },
-        { label: "AAA-L", name: "AAA large text", ratio: 4.5 }
+        { label: "AA-N", name: "AA normal text", ratio: LEVELS.normal.aa },
+        { label: "AA-L", name: "AA large text", ratio: LEVELS.large.aa },
+        { label: "AAA-N", name: "AAA normal text", ratio: LEVELS.normal.aaa },
+        { label: "AAA-L", name: "AAA large text", ratio: LEVELS.large.aaa }
     ];
+
+    function textCategory(px, weight) {
+        const bold = weight >= LARGE_TEXT.boldWeight;
+        return px >= LARGE_TEXT.px || (bold && px >= LARGE_TEXT.boldPx) ? "large" : "normal";
+    }
+
+    function requirements(category) {
+        if (!category) return STANDARDS;
+        return [
+            { label: "AA", name: "AA", ratio: LEVELS[category].aa },
+            { label: "AAA", name: "AAA", ratio: LEVELS[category].aaa }
+        ];
+    }
 
     // Returns "RRGGBB" (upper case) for "#rrggbb" / "rrggbb", otherwise null.
     function parseHex(value) {
@@ -43,5 +66,16 @@ window.Contrast = (() => {
         return ratio(hex, "000000") >= ratio(hex, "FFFFFF") ? "#000000" : "#FFFFFF";
     }
 
-    return Object.freeze({ STANDARDS, parseHex, luminance, ratio, formatRatio, readableText });
+    return Object.freeze({
+        LEVELS,
+        LARGE_TEXT,
+        STANDARDS,
+        textCategory,
+        requirements,
+        parseHex,
+        luminance,
+        ratio,
+        formatRatio,
+        readableText
+    });
 })();
